@@ -1,7 +1,6 @@
 from asyncio.log import logger
 
 from sqlalchemy import create_engine
-import getpass
 import logging
 import os
 from dotenv import load_dotenv
@@ -28,6 +27,13 @@ db_name = os.getenv("DB_NAME", "postgres")
 
 db_landing_schema = os.getenv("DB_LANDING_SCHEMA", "pokemon_landing")
 db_main_schema = os.getenv("DB_MAIN_SCHEMA", "pokemon")
+
+db_landing_table = os.getenv("DB_LANDING_TABLE", "landing_pokemon_card")
+db_card_table = os.getenv("DB_CARD_TABLE", "card")
+db_grade_table = os.getenv("DB_GRADE_TABLE", "grade")
+db_seller_table = os.getenv("DB_SELLER_TABLE", "seller")
+db_card_grade_table = os.getenv("DB_CARD_GRADE_TABLE", "card_grade")
+db_card_seller_table = os.getenv("DB_CARD_SELLER_TABLE", "card_seller")
 
 pokemon_card_file_path = os.getenv("FILE_PATH", "")
 pokemon_card_file_name = os.getenv("FILE_NAME", "")
