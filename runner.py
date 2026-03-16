@@ -1,3 +1,4 @@
+from lookup_values_load import insert_grading_company_lookup_data, insert_language_lookup_data, insert_set_lookup_data
 from references import *
 from pokemon_cards_landing import *
 from card import *
@@ -5,8 +6,11 @@ from card import *
 logger.info("Starting the Pokemon card data processing pipeline...")
 # landing data processing
 load_pokemon_cards_landing()
+# lookup values processing
+insert_language_lookup_data()
+insert_set_lookup_data()
+insert_grading_company_lookup_data()
 # card data processing
-read_landing_table_for_card_data()
 insert_card_data()
 # grade data processing
 # seller data processing

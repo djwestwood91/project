@@ -1,77 +1,72 @@
--- drop schema if exists pokemon_landing cascade;
+-- Landing / staging schema (raw source data)
 create schema if not exists pokemon_landing authorization postgres;
 
-select * from pokemon_landing.landing_pokemon_card lpc 
-
+-- Main normalized schema
 -- drop schema if exists pokemon cascade;
 create schema if not exists pokemon authorization postgres;
 
-create sequence if not exists pokemon.card_seq
-start 1
-increment 1
-minvalue 1
-maxvalue 2147483647
-cache 1;
+-- Lookup tables for normalization
+create table if not exists pokemon.language (
+  language_id serial primary key,
+  name text not null unique
+);
 
+create table if not exists pokemon.card_set (
+  card_set_id serial primary key,
+  name text not null unique,
+  year text,
+  unique(name, year)
+);
+
+create table if not exists pokemon.grading_company (
+  grading_company_id serial primary key,
+  name text not null unique
+);
+
+-- Core card table
 drop table if exists pokemon.card;
 create table if not exists pokemon.card (
-     card_id bigint not null default nextval('pokemon.card_seq'),
+     card_id bigint generated always as identity primary key,
      card text not null,
-     card_set text null,
-     card_year text null,
-     card_holo_flag bool null,
-     card_first_edition_flag bool null,
-     card_language text null,
-     card_additional_details_1 text null,
-     card_additional_details_2 text null,
-     CONSTRAINT pk_card_id PRIMARY KEY (card_id)
+     card_set_id int references pokemon.card_set(card_set_id),
+     card_year text,
+     card_holo_flag boolean not null default false,
+     card_first_edition_flag boolean not null default false,
+     card_language_id int references pokemon.language(language_id),
+     extra_details jsonb,
+     created_at timestamptz not null default now()
 );
 
-create sequence if not exists pokemon.grade_seq
-start 1
-increment 1
-minvalue 1
-maxvalue 2147483647
-cache 1;
-
+-- Grades
 drop table if exists pokemon.card_grade;
 create table if not exists pokemon.card_grade (
-     grade_id bigint not null default nextval('pokemon.grade_seq'),
-     card_id bigint not null,
-     grade numeric not null,
-     grade_description text null,
-     grading_company text null,
-     grading_certification_number text null,
-     graded_card_url text null,
-     constraint pk_grade_id PRIMARY key (grade_id),
-     foreign key (card_id) references pokemon.card(card_id)
+     grade_id bigint generated always as identity primary key,
+     card_id bigint not null references pokemon.card(card_id) on delete cascade,
+     grade numeric(5,2) not null,
+     grade_description text,
+     grading_company_id int references pokemon.grading_company(grading_company_id),
+     grading_certification_number text unique,
+     graded_card_url text,
+     graded_at timestamptz
 );
 
-create sequence if not exists pokemon.seller_seq
-start 1
-increment 1
-minvalue 1
-maxvalue 2147483647
-cache 1;
+create index if not exists idx_card_grade_card_id on pokemon.card_grade(card_id);
 
-drop table if exists pokemon.seller;
+-- Sellers and purchases
 create table if not exists pokemon.seller (
-     seller_id bigint not null default nextval('pokemon.seller_seq'),
+     seller_id bigint generated always as identity primary key,
      seller text not null,
-     website text null,
-     CONSTRAINT pk_seller_id PRIMARY KEY (seller_id)
+     website text
 );
 
 drop table if exists pokemon.card_seller;
-create table if not exists pokemon.card_seller ( 
-	card_id bigint not null,
-	seller_id bigint not null,
-	purchase_price numeric null,
-	purchase_price_currency text null,
-	purchase_source text null,
-	date_purchased date null,
-	quantity int null,
-	constraint pk_card_seller PRIMARY KEY (card_id, seller_id),
-    foreign key (card_id) references pokemon.card(card_id),
-    foreign key (seller_id) references pokemon.seller(seller_id)
+create table if not exists pokemon.card_seller (
+    card_id bigint not null references pokemon.card(card_id) on delete cascade,
+    seller_id bigint not null references pokemon.seller(seller_id),
+    purchase_price numeric,
+    purchase_price_currency text,
+    purchase_source text,
+    date_purchased date,
+    quantity int,
+    constraint pk_card_seller primary key (card_id, seller_id)
 );

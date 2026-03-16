@@ -11,7 +11,7 @@ def load_pokemon_cards_landing():
                                   'Set': 'card_set',
                                   'Year': 'card_year',
                                   'Graded': 'card_graded',
-                                  'Grade': 'card_grade',
+                                  'Grade': 'grade',
                                   'Grading Company': 'grading_company',
                                   'Grading Certification Number': 'grading_certification_number',
                                   'Graded Card URL': 'graded_card_url',
