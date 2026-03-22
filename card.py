@@ -10,14 +10,18 @@ def read_landing_table_for_card_data():
                            card_year,
                            card_holo_flag,
                            card_first_edition_flag,
+                           card_promo_flag,
                            language_id as card_language_id,
+                           rarity_id as card_rarity_id,
                            json_build_object(
                                'detail_1', card_additional_details_1,
-                               'detail_2', card_additional_details_2
+                               'detail_2', card_additional_details_2,
+                               'detail_3', card_additional_details_3
                            ) as extra_details
                     FROM {db_landing_schema}.{db_landing_table}
                     JOIN {db_main_schema}.{db_set_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_set = {db_main_schema}.{db_set_lookup_table}.name
-                    JOIN {db_main_schema}.{db_language_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_language = {db_main_schema}.{db_language_lookup_table}.name"""
+                    JOIN {db_main_schema}.{db_language_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_language = {db_main_schema}.{db_language_lookup_table}.name
+                    JOIN {db_main_schema}.{db_rarity_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_rarity = {db_main_schema}.{db_rarity_lookup_table}.name"""
         df = pd.read_sql(query, con=engine)
         logger.info(f"{db_landing_table} table read successfully")
         return df

@@ -35,9 +35,11 @@ db_seller_table = os.getenv("DB_SELLER_TABLE", "seller")
 db_card_grade_table = os.getenv("DB_CARD_GRADE_TABLE", "card_grade")
 db_card_seller_table = os.getenv("DB_CARD_SELLER_TABLE", "card_seller")
 
+# lookup tables
 db_language_lookup_table = os.getenv("DB_LANGUAGE_LOOKUP_TABLE", "")
 db_set_lookup_table = os.getenv("DB_SET_LOOKUP_TABLE", "")
 db_grading_company_lookup_table = os.getenv("DB_GRADING_COMPANY_LOOKUP_TABLE", "")
+db_rarity_lookup_table = os.getenv("DB_RARITY_LOOKUP_TABLE", "")
 
 pokemon_card_file_path = os.getenv("FILE_PATH", "")
 pokemon_card_file_name = os.getenv("FILE_NAME", "")

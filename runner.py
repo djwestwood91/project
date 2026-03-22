@@ -1,4 +1,4 @@
-from lookup_values_load import insert_grading_company_lookup_data, insert_language_lookup_data, insert_set_lookup_data
+from lookup_values_load import insert_grading_company_lookup_data, insert_language_lookup_data, insert_rarity_lookup_data, insert_set_lookup_data
 from references import *
 from pokemon_cards_landing import *
 from card import *
@@ -10,6 +10,7 @@ load_pokemon_cards_landing()
 insert_language_lookup_data()
 insert_set_lookup_data()
 insert_grading_company_lookup_data()
+insert_rarity_lookup_data()
 # card data processing
 insert_card_data()
 # grade data processing

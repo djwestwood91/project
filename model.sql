@@ -23,6 +23,16 @@ create table if not exists pokemon.grading_company (
   name text not null unique
 );
 
+create table if not exists pokemon.grading_company (
+  grading_company_id serial primary key,
+  name text not null unique
+);
+  
+create table if not exists pokemon.rarity (
+  rarity_id serial primary key,
+  name text not null unique
+);
+
 -- Core card table
 drop table if exists pokemon.card;
 create table if not exists pokemon.card (
@@ -32,7 +42,9 @@ create table if not exists pokemon.card (
      card_year text,
      card_holo_flag boolean not null default false,
      card_first_edition_flag boolean not null default false,
+     card_promo_flag boolean not null default false,
      card_language_id int references pokemon.language(language_id),
+     card_rarity_id int references pokemon.rarity(rarity_id),
      extra_details jsonb,
      created_at timestamptz not null default now()
 );

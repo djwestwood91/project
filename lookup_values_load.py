@@ -100,6 +100,30 @@ def insert_grading_company_lookup_data():
     except Exception as e:
         logger.error(f"Error inserting pokemon card grading company lookup data: {e}")
 
-insert_language_lookup_data()
-insert_set_lookup_data()
-insert_grading_company_lookup_data()
+def read_landing_table_for_rarity_lookup():
+    try:
+        # Read the landing table from the database
+        query = f"""SELECT distinct card_rarity as name
+                    FROM {db_landing_schema}.{db_landing_table}
+                    WHERE nullif(card_rarity, '') IS NOT NULL"""
+        
+        df = pd.read_sql(query, con=engine)
+        logger.info(f"{db_landing_table} table read successfully")
+        return df
+    except Exception as e:
+        logger.error(f"Error reading landing table: {e}")
+        return None
+    
+def insert_rarity_lookup_data():
+    try:
+        # Read the landing table data
+        df = read_landing_table_for_rarity_lookup()
+        if df is not None:
+            # Clean/reload lookup table
+            truncate_table(db_main_schema, db_rarity_lookup_table, restart_identity=True)
+
+            # Write the DataFrame to the main database table
+            df.to_sql(db_rarity_lookup_table, con=engine, schema=db_main_schema, if_exists='append', index=False)
+            logger.info("Pokemon card rarity lookup data inserted successfully into main database")
+    except Exception as e:
+        logger.error(f"Error inserting pokemon card rarity lookup data: {e}")
