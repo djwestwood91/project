@@ -47,9 +47,11 @@ def insert_language_lookup_data():
 def read_landing_table_for_card_set_lookup():
     try:
         # Read the landing table from the database
-        query = f"""SELECT distinct card_set as name
+        query = f"""SELECT distinct card_set as name, 
+                           card_year as year
                     FROM {db_landing_schema}.{db_landing_table}
-                    WHERE nullif(card_set, '') IS NOT NULL"""
+                    WHERE nullif(card_set, '') IS NOT NULL
+                    ORDER BY name, year"""
         
         df = pd.read_sql(query, con=engine)
         logger.info(f"{db_landing_table} table read successfully")
