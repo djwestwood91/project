@@ -13,6 +13,8 @@ def load_pokemon_cards_landing():
                                   'Graded': 'card_graded',
                                   'Grade': 'grade',
                                   'Grading Company': 'grading_company',
+                                  'Grading Company Full Name': 'grading_company_full_name',
+                                  'Grade Description': 'grade_description',
                                   'Grading Certification Number': 'grading_certification_number',
                                   'Graded Card URL': 'graded_card_url',
                                   'Holo': 'card_holo_flag',
@@ -37,3 +39,4 @@ def load_pokemon_cards_landing():
         logger.info(f"Pokemon cards from {pokemon_card_file_path + pokemon_card_file_name} loaded successfully")
     except Exception as e:
         logger.error(f"Error loading pokemon cards: {e}")
+        raise

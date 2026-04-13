@@ -7,7 +7,6 @@ def read_landing_table_for_card_data():
         # Read the landing table from the database
         query = f"""SELECT card,
                            card_set_id,
-                           card_year,
                            card_holo_flag,
                            card_first_edition_flag,
                            card_promo_flag,
@@ -21,7 +20,7 @@ def read_landing_table_for_card_data():
                     FROM {db_landing_schema}.{db_landing_table}
                     JOIN {db_main_schema}.{db_set_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_set = {db_main_schema}.{db_set_lookup_table}.name
                     JOIN {db_main_schema}.{db_language_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_language = {db_main_schema}.{db_language_lookup_table}.name
-                    JOIN {db_main_schema}.{db_rarity_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_rarity = {db_main_schema}.{db_rarity_lookup_table}.name"""
+                    JOIN {db_main_schema}.{db_rarity_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_rarity = {db_main_schema}.{db_rarity_lookup_table}.rarity"""
         df = pd.read_sql(query, con=engine)
         logger.info(f"{db_landing_table} table read successfully")
         return df

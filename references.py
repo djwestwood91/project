@@ -1,5 +1,4 @@
 from asyncio.log import logger
-
 from sqlalchemy import create_engine
 import logging
 import os
@@ -39,11 +38,17 @@ db_card_seller_table = os.getenv("DB_CARD_SELLER_TABLE", "card_seller")
 db_language_lookup_table = os.getenv("DB_LANGUAGE_LOOKUP_TABLE", "")
 db_set_lookup_table = os.getenv("DB_SET_LOOKUP_TABLE", "")
 db_grading_company_lookup_table = os.getenv("DB_GRADING_COMPANY_LOOKUP_TABLE", "")
+db_grade_description_lookup_table = os.getenv("DB_GRADE_DESCRIPTION_LOOKUP_TABLE", "")
 db_rarity_lookup_table = os.getenv("DB_RARITY_LOOKUP_TABLE", "")
 
+# source file configuration
 pokemon_card_file_path = os.getenv("FILE_PATH", "")
 pokemon_card_file_name = os.getenv("FILE_NAME", "")
 pokemon_card_sheet_name = os.getenv("FILE_SHEET_NAME", "")
+
+# output file configuration
+pokemon_card_output_file_path = os.getenv("OUTPUT_FILE_PATH", "")
+pokemon_card_output_file_name = os.getenv("OUTPUT_FILE_NAME", "")
 
 logger.info(f"Initializing database connection to {db_name}...")
 

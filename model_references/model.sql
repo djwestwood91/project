@@ -1,9 +1,9 @@
 -- Landing / staging schema (raw source data)
--- drop schema if exists pokemon_landing cascade;
+drop schema if exists pokemon_landing cascade;
 create schema if not exists pokemon_landing authorization postgres;
 
 -- Main normalized schema
--- drop schema if exists pokemon cascade;
+drop schema if exists pokemon cascade;
 create schema if not exists pokemon authorization postgres;
 
 -- Lookup tables for normalization
@@ -24,20 +24,22 @@ create table if not exists pokemon.card_set (
 drop table if exists pokemon.grading_company;
 create table if not exists pokemon.grading_company (
   grading_company_id serial primary key,
-  name text not null unique,
-  full_name text
+  company text not null unique,
+  company_full_name text
 );
 
-drop table if exists pokemon.grading_company;
-create table if not exists pokemon.grading_company (
-  grading_company_id serial primary key,
-  name text not null unique
+drop table if exists pokemon.grade_description;
+create table if not exists pokemon.grade_description (
+  grade_description_id serial primary key,
+  grading_company_id int references pokemon.grading_company(grading_company_id),
+  grade numeric(5,2) not null,
+  grade_description text not null unique
 );
   
 drop table if exists pokemon.rarity;
 create table if not exists pokemon.rarity (
   rarity_id serial primary key,
-  name text not null unique
+  rarity text not null unique
 );
 
 -- Core card table
@@ -46,7 +48,6 @@ create table if not exists pokemon.card (
      card_id bigint generated always as identity primary key,
      card text not null,
      card_set_id int references pokemon.card_set(card_set_id),
-     card_year text,
      card_holo_flag boolean not null default false,
      card_first_edition_flag boolean not null default false,
      card_promo_flag boolean not null default false,
@@ -61,8 +62,7 @@ drop table if exists pokemon.card_grade;
 create table if not exists pokemon.card_grade (
      grade_id bigint generated always as identity primary key,
      card_id bigint not null references pokemon.card(card_id) on delete cascade,
-     grade numeric(5,2) not null,
-     grade_description text,
+     grade_description_id int references pokemon.grade_description(grade_description_id),
      grading_company_id int references pokemon.grading_company(grading_company_id),
      grading_certification_number text unique,
      graded_card_url text,

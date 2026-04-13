@@ -20,7 +20,7 @@ def read_landing_table_for_grade_data():
         logger.error(f"Error reading landing table: {e}")
         return None
     
-def insert_card_data():
+def insert_grade_data():
     try:
         # Read the landing table data
         df = read_landing_table_for_grade_data()
