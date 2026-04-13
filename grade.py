@@ -25,7 +25,7 @@ def read_landing_table_for_grade_data():
         return df
     except Exception as e:
         logger.error(f"Error reading landing table: {e}")
-        return None
+        raise
     
 def perform_quality_checks_on_grade_data():
     try:
