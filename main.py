@@ -8,8 +8,9 @@ from grade import *
 def run_pipeline():
     try:
         logger.info("Starting the Pokemon card data processing pipeline...")
-        # upload file to s3
+        # list objects in S3 - adjust the flag to True if you want to test the listing functionality, but ensure the file exists in the specified S3 location to avoid errors
         list_objects(list_objects_flag=True)
+        # upload file to s3 - adjust the flag to True if you want to test the upload functionality, but ensure the file exists in the specified S3 location to avoid errors
         upload_file_to_s3(upload_flag=True)
         # landing data processing
         load_pokemon_cards_landing()
@@ -22,10 +23,12 @@ def run_pipeline():
         # card data processing
         insert_card_data()
         # grade data processing
+        insert_grade_data()
         # seller data processing
-        # card_grade data processing
-        # card_seller data processing
-        # download file from s3
+        # insert_seller_data()
+        # purchase data processing
+        # insert_purchase_data()
+        # download file from s3 - adjust the flag to True if you want to test the download functionality, but ensure the file exists in the specified S3 location to avoid errors
         download_file_from_s3(download_flag=False)
         logger.info("Pokemon card data processing pipeline completed successfully.")
     except Exception as e:

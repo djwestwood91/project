@@ -31,9 +31,10 @@ create table if not exists pokemon.grading_company (
 drop table if exists pokemon.grade_description;
 create table if not exists pokemon.grade_description (
   grade_description_id serial primary key,
-  grading_company_id int references pokemon.grading_company(grading_company_id),
+  grading_company_id int not null references pokemon.grading_company(grading_company_id),
   grade numeric(5,2) not null,
-  grade_description text not null unique
+  grade_description text not null,
+  unique(grading_company_id, grade)
 );
   
 drop table if exists pokemon.rarity;
@@ -62,8 +63,7 @@ drop table if exists pokemon.card_grade;
 create table if not exists pokemon.card_grade (
      grade_id bigint generated always as identity primary key,
      card_id bigint not null references pokemon.card(card_id) on delete cascade,
-     grade_description_id int references pokemon.grade_description(grade_description_id),
-     grading_company_id int references pokemon.grading_company(grading_company_id),
+     grade_description_id int not null references pokemon.grade_description(grade_description_id),
      grading_certification_number text unique,
      graded_card_url text,
      graded_at timestamptz
@@ -71,7 +71,7 @@ create table if not exists pokemon.card_grade (
 
 create index if not exists idx_card_grade_card_id on pokemon.card_grade(card_id);
 
--- Sellers and purchases
+-- Sellers
 drop table if exists pokemon.seller;
 create table if not exists pokemon.seller (
      seller_id bigint generated always as identity primary key,
@@ -79,14 +79,20 @@ create table if not exists pokemon.seller (
      website text
 );
 
-drop table if exists pokemon.card_seller;
-create table if not exists pokemon.card_seller (
+-- Purchases
+drop table if exists pokemon.purchase;
+create table if not exists pokemon.purchase (
+    purchase_id bigint generated always as identity primary key,
     card_id bigint not null references pokemon.card(card_id) on delete cascade,
     seller_id bigint not null references pokemon.seller(seller_id),
+    grade_id bigint references pokemon.card_grade(grade_id),
     purchase_price numeric,
     purchase_price_currency text,
     purchase_source text,
     date_purchased date,
     quantity int,
-    constraint pk_card_seller primary key (card_id, seller_id)
+    created_at timestamptz default now()
 );
+
+create index if not exists idx_purchase_card_id on pokemon.purchase(card_id);
+create index if not exists idx_purchase_seller_id on pokemon.purchase(seller_id);

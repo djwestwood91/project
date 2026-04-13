@@ -62,3 +62,4 @@ try:
         logger.info(f"Database Connection to {db_name} successful")
 except Exception as e:
     logger.error(f"Connection failed: {e}")
+    raise

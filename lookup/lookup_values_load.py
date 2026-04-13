@@ -109,10 +109,12 @@ def insert_grading_company_lookup_data():
 def read_landing_table_for_grading_description_lookup():
     try:
         # Read the landing table from the database
-        query = f"""SELECT distinct grade,
-                           grade_description
-                    FROM {db_landing_schema}.{db_landing_table}
-                    WHERE nullif(grade_description, '') IS NOT NULL"""
+        query = f"""SELECT distinct gc.grading_company_id, 
+                           lpc.grade,
+                           lpc.grade_description
+                    FROM {db_landing_schema}.{db_landing_table} lpc
+                    JOIN {db_main_schema}.{db_grading_company_lookup_table} gc ON lpc.grading_company = gc.company
+                    WHERE nullif(lpc.grade_description, '') IS NOT NULL"""
         
         df = pd.read_sql(query, con=engine)
         logger.info(f"{db_landing_table} table read successfully")

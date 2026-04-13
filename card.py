@@ -26,7 +26,21 @@ def read_landing_table_for_card_data():
         return df
     except Exception as e:
         logger.error(f"Error reading landing table: {e}")
-        return None
+        raise
+    
+def perform_quality_checks_on_card_data():
+    try:
+        # Example quality check: Ensure no null values in critical columns
+        query = f"""SELECT COUNT(*) FROM {db_main_schema}.{db_card_table} WHERE card IS NULL OR card_set_id IS NULL"""
+        result = pd.read_sql(query, con=engine)
+        # if the count of records with null values in critical columns is greater than 0, log a warning, otherwise log that the quality check passed
+        if result.iloc[0, 0] > 0:
+            logger.warning(f"Quality Check Failed: Found {result.iloc[0, 0]} records with null values in critical columns")
+        else:
+            logger.info("Quality Check Passed: No null values found in critical columns")
+    except Exception as e:
+        logger.error(f"Error performing quality checks on card data: {e}")
+        raise
     
 def insert_card_data():
     try:
@@ -38,5 +52,7 @@ def insert_card_data():
             df['extra_details'] = df['extra_details'].apply(lambda x: json.dumps(x) if isinstance(x, dict) else x)
             df.to_sql(db_card_table, con=engine, schema=db_main_schema, if_exists='append', index=False)
             logger.info("Pokemon card data inserted successfully into main database")
+            perform_quality_checks_on_card_data()
     except Exception as e:
         logger.error(f"Error inserting pokemon card data: {e}")
+        raise
