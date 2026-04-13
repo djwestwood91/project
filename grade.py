@@ -32,6 +32,7 @@ def perform_quality_checks_on_grade_data():
         # Example quality check: Ensure no null values in critical columns
         query = f"""SELECT COUNT(*) FROM {db_main_schema}.{db_grade_table} WHERE card_id IS NULL OR grade_description_id IS NULL"""
         result = pd.read_sql(query, con=engine)
+        # if the count of records with null values in critical columns is greater than 0, log a warning, otherwise log that the quality check passed
         if result.iloc[0, 0] > 0:
             logger.warning(f"Quality Check Failed: Found {result.iloc[0, 0]} records with null values in critical columns")
         else:
