@@ -3,8 +3,9 @@ from references import *
 from utils.aws_s3_utils import *
 from landing.pokemon_cards_landing import *
 from card import *
+from card_instance import *
 from grade import *
-from utils.db_utils import create_model
+from utils.db_utils import *
 
 def run_db_utils():
     try:
@@ -37,6 +38,8 @@ def run_poke_pipeline():
         insert_rarity_lookup_data()
         # card data processing
         insert_card_data()
+        # card instance data processing
+        insert_card_instance_data()
         # grade data processing
         insert_grade_data()
         # seller data processing

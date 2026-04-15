@@ -29,7 +29,7 @@ db_main_schema = os.getenv("DB_MAIN_SCHEMA", "pokemon")
 
 db_landing_table = os.getenv("DB_LANDING_TABLE", "landing_pokemon_card")
 db_card_table = os.getenv("DB_CARD_TABLE", "card")
-db_card_variant_table = os.getenv("DB_CARD_VARIANT_TABLE", "card_variant")
+db_card_instance_table = os.getenv("DB_CARD_INSTANCE_TABLE", "card_instance")
 db_card_grade_table = os.getenv("DB_CARD_GRADE_TABLE", "card_grade")
 db_seller_table = os.getenv("DB_SELLER_TABLE", "seller")
 db_card_seller_table = os.getenv("DB_CARD_SELLER_TABLE", "card_seller")
@@ -40,6 +40,8 @@ db_set_lookup_table = os.getenv("DB_SET_LOOKUP_TABLE", "")
 db_grading_company_lookup_table = os.getenv("DB_GRADING_COMPANY_LOOKUP_TABLE", "")
 db_grade_description_lookup_table = os.getenv("DB_GRADE_DESCRIPTION_LOOKUP_TABLE", "")
 db_rarity_lookup_table = os.getenv("DB_RARITY_LOOKUP_TABLE", "")
+db_currency_lookup_table = os.getenv("DB_CURRENCY_LOOKUP_TABLE", "currency")
+db_purchase_source_lookup_table = os.getenv("DB_PURCHASE_SOURCE_LOOKUP_TABLE", "purchase_source")
 
 # source file configuration
 pokemon_card_file_path = os.getenv("FILE_PATH", "")

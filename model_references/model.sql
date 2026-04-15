@@ -34,7 +34,8 @@ create table if not exists pokemon_landing.landing_pokemon_card (
   card_date_purchased date,
   card_source text,
   card_seller text,
-  website text
+  website text,
+  created_at timestamptz not null default now()
 );
 
 -- Main normalized schema
@@ -78,10 +79,24 @@ create table if not exists pokemon.rarity (
   rarity text not null unique
 );
 
+drop table if exists pokemon.currency;
+create table if not exists pokemon.currency (
+  currency_id serial primary key,
+  currency_code text not null unique,
+  currency_name text not null unique
+);
+
+drop table if exists pokemon.purchase_source;
+create table if not exists pokemon.purchase_source (
+  purchase_source_id serial primary key,
+  source text not null unique
+);
+
 -- Core card table
 drop table if exists pokemon.card;
 create table if not exists pokemon.card (
      card_id bigint generated always as identity primary key,
+     row_id int,
      card text not null,
      card_set_id int references pokemon.card_set(card_set_id),
      card_holo_flag boolean not null default false,
@@ -93,41 +108,59 @@ create table if not exists pokemon.card (
      created_at timestamptz not null default now()
 );
 
+-- Card instance (individual physical instance of a card)
+drop table if exists pokemon.card_instance;
+create table if not exists pokemon.card_instance (
+     card_instance_id bigint generated always as identity primary key,
+     row_id int,
+     card_id bigint not null references pokemon.card(card_id) on delete cascade,
+     created_at timestamptz not null default now()
+);
+
+create index if not exists idx_card_instance_row_id on pokemon.card_instance(row_id);
+create index if not exists idx_card_instance_card_id on pokemon.card_instance(card_id);
+
 -- Card grades
 drop table if exists pokemon.card_grade;
 create table if not exists pokemon.card_grade (
      grade_id bigint generated always as identity primary key,
-     card_id bigint not null references pokemon.card(card_id),
+     row_id int,
+     card_instance_id bigint not null references pokemon.card_instance(card_instance_id) on delete cascade,
      grade_description_id int not null references pokemon.grade_description(grade_description_id),
      grading_certification_number text unique,
      graded_card_url text,
      created_at timestamptz not null default now()
 );
 
-create index if not exists idx_card_grade_card_id on pokemon.card_grade(card_id);
+create index if not exists idx_card_grade_row_id on pokemon.card_grade(row_id);
+create index if not exists idx_card_grade_card_instance_id on pokemon.card_grade(card_instance_id);
 
 -- Sellers
 drop table if exists pokemon.seller;
 create table if not exists pokemon.seller (
      seller_id bigint generated always as identity primary key,
+     row_id int,
      seller text not null,
      website text,
-     created_at timestamptz not null default now()
+     created_at timestamptz not null default now(),
+     unique(seller, website)
 );
 
 -- Purchases
 drop table if exists pokemon.purchase;
 create table if not exists pokemon.purchase (
     purchase_id bigint generated always as identity primary key,
-    card_id bigint not null references pokemon.card(card_id),
+    row_id int,
+    card_instance_id bigint not null references pokemon.card_instance(card_instance_id),
     seller_id bigint not null references pokemon.seller(seller_id),
     grade_id bigint references pokemon.card_grade(grade_id),
     purchase_price numeric,
-    purchase_price_currency text,
-    purchase_source text,
+    currency_id int references pokemon.currency(currency_id),
+    purchase_source_id int references pokemon.purchase_source(purchase_source_id),
     date_purchased date,
-    quantity int,
     created_at timestamptz default now()
 );
 
+create index if not exists idx_purchase_row_id on pokemon.purchase(row_id);
+create index if not exists idx_purchase_card_instance_id on pokemon.purchase(card_instance_id);
 create index if not exists idx_purchase_seller_id on pokemon.purchase(seller_id);

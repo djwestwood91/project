@@ -6,6 +6,7 @@ def read_landing_table_for_card_data():
     try:
         # Read the landing table from the database
         query = f"""SELECT distinct on (row_id)
+                           row_id,
                            card,
                            card_set_id,
                            card_holo_flag,
@@ -18,10 +19,10 @@ def read_landing_table_for_card_data():
                                'detail_2', card_additional_details_2,
                                'detail_3', card_additional_details_3
                            ) as extra_details
-                    FROM {db_landing_schema}.{db_landing_table}
-                    JOIN {db_main_schema}.{db_set_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_set = {db_main_schema}.{db_set_lookup_table}.name
-                    JOIN {db_main_schema}.{db_language_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_language = {db_main_schema}.{db_language_lookup_table}.name
-                    JOIN {db_main_schema}.{db_rarity_lookup_table} ON {db_landing_schema}.{db_landing_table}.card_rarity = {db_main_schema}.{db_rarity_lookup_table}.rarity
+                    FROM {db_landing_schema}.{db_landing_table} lpc
+                    JOIN {db_main_schema}.{db_set_lookup_table} cs ON lpc.card_set = cs.name
+                    JOIN {db_main_schema}.{db_language_lookup_table} cl ON lpc.card_language = cl.name
+                    JOIN {db_main_schema}.{db_rarity_lookup_table} cr ON lpc.card_rarity = cr.rarity
                     WHERE nullif(card, '') IS NOT NULL
                     ORDER BY row_id;"""
         df = pd.read_sql(query, con=engine)

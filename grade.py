@@ -3,9 +3,10 @@ import pandas as pd
 
 def read_landing_table_for_grade_data():
     try:
-        # Read the landing table and match to card_id - join on ALL card attributes to avoid cartesian product
+        # Read the landing table and match to card_instance_id - join on row_id for 1:1 mapping
         query = f"""select distinct on (lpc.row_id)
-                    pc.card_id,
+                    ci.card_instance_id,
+                    lpc.row_id,
                     gd.grade_description_id,
                     lpc.grading_certification_number,
                     lpc.graded_card_url
@@ -13,9 +14,10 @@ def read_landing_table_for_grade_data():
                 join {db_main_schema}.{db_set_lookup_table} cs on cs."name" = lpc.card_set
                 join {db_main_schema}.{db_card_table} pc on cs.card_set_id = pc.card_set_id 
                  and pc.card = lpc.card
+                join {db_main_schema}.{db_card_instance_table} ci on ci.row_id = lpc.row_id
                 join {db_main_schema}.{db_grade_description_lookup_table} gd on gd.grade_description = lpc.grade_description 
                 join {db_main_schema}.{db_grading_company_lookup_table} gc on gc.grading_company_id = gd.grading_company_id
-                 and gc.company = lpc.grading_company
+                and gc.company = lpc.grading_company
                 where lpc.grade is not null
                 order by lpc.row_id;"""
         df = pd.read_sql(query, con=engine)
@@ -28,7 +30,7 @@ def read_landing_table_for_grade_data():
 def perform_quality_checks_on_grade_data():
     try:
         # Example quality check: Ensure no null values in critical columns
-        query = f"""SELECT COUNT(*) FROM {db_main_schema}.{db_card_grade_table} WHERE card_id IS NULL OR grade_description_id IS NULL"""
+        query = f"""SELECT COUNT(*) FROM {db_main_schema}.{db_card_grade_table} WHERE card_instance_id IS NULL OR grade_description_id IS NULL"""
         result = pd.read_sql(query, con=engine)
         # if the count of records with null values in critical columns is greater than 0, log a warning, otherwise log that the quality check passed
         if result.iloc[0, 0] > 0:

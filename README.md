@@ -18,9 +18,11 @@ This project automates the ingestion, transformation, and storage of Pokemon car
 project/
 ├── main.py                          # Main pipeline orchestrator
 ├── references.py                    # Database and file path configurations
-├── aws_s3_utils.py                  # AWS S3 client and operations
 ├── card.py                          # Card data processing logic
 ├── grade.py                         # Grade data processing logic
+├── utils/
+│   ├── aws_s3_utils.py              # AWS S3 client and operations
+│   └── db_utils.py                  # Database utilities (model creation, table clearing)
 ├── landing/
 │   └── pokemon_cards_landing.py     # Landing layer data processing
 ├── lookup/
@@ -28,6 +30,8 @@ project/
 ├── model_references/
 │   └── model.sql                    # Database schema definitions
 └── files/                           # Local data files directory
+    ├── processed_data/              # Output directory for processed files
+    └── source_data/                 # Input directory for source files
 ```
 
 ## Prerequisites
@@ -71,28 +75,82 @@ FILE_SHEET_NAME=pokemon_data
 
 ## Pipeline Workflow
 
-The `run_pipeline()` function executes the following steps:
+The `main.py` script orchestrates the following workflow:
 
-```
-1. List objects in S3 bucket
-2. Upload local file to S3
-3. Process landing layer data
-4. Insert lookup table data:
+### Database Setup Phase
+1. **Create Database Model**: Executes `model.sql` to create all schemas and tables
+   - `pokemon_landing` schema for raw data ingestion
+   - `pokemon` schema for processed data storage
+   - Controlled by `create_model_flag` parameter (default: True)
+
+2. **Clear Landing Table**: Optionally clears existing landing table data before loading new data
+   - Controlled by `clear_landing_table_flag` parameter (default: False)
+
+### Data Processing Phase
+3. **List S3 Objects**: Lists all available objects in the configured S3 bucket
+   - Controlled by `list_objects_flag` parameter (default: True)
+
+4. **Upload to S3**: Uploads the local Pokemon card data file to S3
+   - Controlled by `upload_flag` parameter (default: True)
+
+5. **Load Landing Data**: Processes raw Pokemon card CSV/Excel data into the landing table
+
+6. **Load Lookup Tables**: Populates reference/dimension tables
    - Languages
-   - Sets
-   - Grading companies
-   - Grade descriptions
-   - Rarity levels
-5. Insert card data
-6. Insert grade data
-7. Download processed file from S3 (optional)
-```
+   - Card Sets
+   - Grading Companies
+   - Grade Descriptions
+   - Card Rarity Levels
+
+7. **Load Card Data**: Inserts normalized card records into the main `pokemon.card` table
+
+8. **Load Grade Data**: Processes and inserts card grading information into the `pokemon.card_grade` table
+
+9. **Download from S3**: Optionally downloads processed files from S3 for archive/verification
+   - Controlled by `download_flag` parameter (default: False)
+
+### Optional Features (Currently Disabled)
+- Seller data processing
+- Purchase transaction processing
 
 ## Usage
 
-Run the complete pipeline:
+### Running the Complete Pipeline
+
+Execute the main pipeline script:
 ```bash
 python main.py
+```
+
+This will run both `run_db_utils()` and `run_poke_pipeline()` functions sequentially.
+
+### Main Functions
+
+**`run_db_utils()`**
+- Creates the database model and schema
+- Optionally clears the landing table
+- Must be run before the first pipeline execution
+
+**`run_poke_pipeline()`**
+- Executes the full data processing workflow
+- Includes S3 operations, landing load, lookup population, and card/grade insertion
+- Logs all operations to console and `db.log`
+
+### Controlling Pipeline Behavior
+
+Many pipeline steps can be controlled using flags in the respective function calls in `main.py`:
+
+```python
+# Database model creation
+create_model(create_model_flag=True)    # Set to False to skip model creation
+
+# Landing table cleanup
+clear_landing_table(clear_landing_table_flag=False)  # Set to True to clear existing data
+
+# S3 operations
+list_objects(list_objects_flag=True)
+upload_file_to_s3(upload_flag=True)
+download_file_from_s3(download_flag=False)  # Set to True to download processed files
 ```
 
 ## Database Schema
