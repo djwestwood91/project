@@ -67,6 +67,17 @@ POKEMON_CARD_OUTPUT_FILE_NAME = os.getenv("OUTPUT_FILE_NAME", "")
 # model configuration
 DB_MODEL_FILE_PATH = os.getenv("DB_MODEL_FILE_PATH", "model_references/model.sql")
 
+# Load pipeline flags from environment variables
+PIPELINE_CREATE_MODEL = os.getenv("PIPELINE_CREATE_MODEL", "True").lower() == "true"
+PIPELINE_CLEAR_LANDING = os.getenv("PIPELINE_CLEAR_LANDING", "False").lower() == "true"
+PIPELINE_LIST_S3 = os.getenv("PIPELINE_LIST_S3", "True").lower() == "true"
+PIPELINE_UPLOAD_S3 = os.getenv("PIPELINE_UPLOAD_S3", "True").lower() == "true"
+PIPELINE_DOWNLOAD_S3 = os.getenv("PIPELINE_DOWNLOAD_S3", "False").lower() == "true"
+
+# Status indicators for logging
+STATUS_OK = "[OK]"
+STATUS_FAIL = "[FAIL]"
+
 logger.info(f"Initializing database connection to {DB_NAME}...")
 
 # password = getpass.getpass("Enter database password: ")

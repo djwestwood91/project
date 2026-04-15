@@ -14,18 +14,6 @@ from card import *
 from card_instance import *
 from grade import *
 from utils.db_utils import *
-import os
-
-# Load pipeline flags from environment variables
-PIPELINE_CREATE_MODEL = os.getenv("PIPELINE_CREATE_MODEL", "True").lower() == "true"
-PIPELINE_CLEAR_LANDING = os.getenv("PIPELINE_CLEAR_LANDING", "False").lower() == "true"
-PIPELINE_LIST_S3 = os.getenv("PIPELINE_LIST_S3", "True").lower() == "true"
-PIPELINE_UPLOAD_S3 = os.getenv("PIPELINE_UPLOAD_S3", "True").lower() == "true"
-PIPELINE_DOWNLOAD_S3 = os.getenv("PIPELINE_DOWNLOAD_S3", "False").lower() == "true"
-
-# Status indicators for logging
-STATUS_OK = "[OK]"
-STATUS_FAIL = "[FAIL]"
 
 def run_db_utils():
     try:
