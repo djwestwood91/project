@@ -8,9 +8,10 @@ This project automates the ingestion, transformation, and storage of Pokemon car
 
 - **S3 Integration**: Upload/download files to/from AWS S3 bucket
 - **Landing Layer**: Process raw Pokemon card data into a landing schema
-- **Lookup Tables**: Populate reference data (language, sets, grading companies, grades, rarity)
-- **Card Processing**: Insert and manage card data
-- **Grade Processing**: Handle card grading information
+- **Lookup Tables**: Populate reference data (language, sets, grading companies, grades, rarity, currency, purchase source)
+- **Card Processing**: Insert and manage card data with full 3NF normalization
+- **Card Instance Tracking**: Track individual physical instances of each card
+- **Grade Processing**: Handle card grading information with lineage tracking
 
 ## Project Structure
 
@@ -75,39 +76,49 @@ FILE_SHEET_NAME=pokemon_data
 
 ## Pipeline Workflow
 
-The `main.py` script orchestrates the following workflow:
+The `main.py` script orchestrates a data-driven pipeline with the following workflow:
 
 ### Database Setup Phase
 1. **Create Database Model**: Executes `model.sql` to create all schemas and tables
    - `pokemon_landing` schema for raw data ingestion
-   - `pokemon` schema for processed data storage
-   - Controlled by `create_model_flag` parameter (default: True)
+   - `pokemon` schema for processed data storage with full 3NF normalization
+   - Controlled by `PIPELINE_CREATE_MODEL` environment variable (default: True)
 
 2. **Clear Landing Table**: Optionally clears existing landing table data before loading new data
-   - Controlled by `clear_landing_table_flag` parameter (default: False)
+   - Controlled by `PIPELINE_CLEAR_LANDING` environment variable (default: False)
 
 ### Data Processing Phase
 3. **List S3 Objects**: Lists all available objects in the configured S3 bucket
-   - Controlled by `list_objects_flag` parameter (default: True)
+   - Controlled by `PIPELINE_LIST_S3` environment variable (default: True)
 
 4. **Upload to S3**: Uploads the local Pokemon card data file to S3
-   - Controlled by `upload_flag` parameter (default: True)
+   - Controlled by `PIPELINE_UPLOAD_S3` environment variable (default: True)
 
 5. **Load Landing Data**: Processes raw Pokemon card CSV/Excel data into the landing table
 
-6. **Load Lookup Tables**: Populates reference/dimension tables
+6. **Load Lookup Tables**: Populates reference/dimension tables (data-driven approach):
    - Languages
    - Card Sets
    - Grading Companies
    - Grade Descriptions
    - Card Rarity Levels
+   - Currencies (new)
+   - Purchase Sources (new)
 
-7. **Load Card Data**: Inserts normalized card records into the main `pokemon.card` table
+7. **Load Card Data**: Inserts normalized card records into the main `pokemon.card` table with source traceability
 
-8. **Load Grade Data**: Processes and inserts card grading information into the `pokemon.card_grade` table
+8. **Load Card Instance Data**: Creates individual card instance records tracking each unique physical copy collected
 
-9. **Download from S3**: Optionally downloads processed files from S3 for archive/verification
-   - Controlled by `download_flag` parameter (default: False)
+9. **Load Grade Data**: Processes and inserts card grading information into the `pokemon.card_grade` table linked to card instances
+
+10. **Download from S3**: Optionally downloads processed files from S3 for archive/verification
+    - Controlled by `PIPELINE_DOWNLOAD_S3` environment variable (default: False)
+
+### Pipeline Logging
+- Each step is numbered and tracked (e.g., "[Step 1/14]")
+- Status indicators: `[OK]` for success, `[FAIL]` for errors
+- All operations logged to both console and `db.log`
+- If pipeline fails, the exact failing step is reported
 
 ### Optional Features (Currently Disabled)
 - Seller data processing
@@ -138,19 +149,35 @@ This will run both `run_db_utils()` and `run_poke_pipeline()` functions sequenti
 
 ### Controlling Pipeline Behavior
 
-Many pipeline steps can be controlled using flags in the respective function calls in `main.py`:
+Pipeline steps can be controlled via environment variables in the `.env` file, enabling flexible configuration for different environments (development, testing, production):
 
-```python
-# Database model creation
-create_model(create_model_flag=True)    # Set to False to skip model creation
+```bash
+# Database Setup Control
+PIPELINE_CREATE_MODEL=True          # Create database model on startup
+PIPELINE_CLEAR_LANDING=False        # Clear landing table before loading (WARNING: causes data loss)
 
-# Landing table cleanup
-clear_landing_table(clear_landing_table_flag=False)  # Set to True to clear existing data
+# S3 Operations Control
+PIPELINE_LIST_S3=True               # List S3 bucket contents
+PIPELINE_UPLOAD_S3=True             # Upload local file to S3
+PIPELINE_DOWNLOAD_S3=False          # Download processed files from S3
+```
 
-# S3 operations
-list_objects(list_objects_flag=True)
-upload_file_to_s3(upload_flag=True)
-download_file_from_s3(download_flag=False)  # Set to True to download processed files
+**Example configurations:**
+
+*Development (test everything locally):*
+```bash
+PIPELINE_CREATE_MODEL=True
+PIPELINE_LIST_S3=False
+PIPELINE_UPLOAD_S3=False
+PIPELINE_DOWNLOAD_S3=False
+```
+
+*Production (skip S3, data already loaded):*
+```bash
+PIPELINE_CREATE_MODEL=False
+PIPELINE_LIST_S3=False
+PIPELINE_UPLOAD_S3=False
+PIPELINE_DOWNLOAD_S3=False
 ```
 
 ## Database Schema
@@ -191,14 +218,54 @@ All source-derived tables include `row_id` for traceability:
 
 ### Environment Variables
 
-All sensitive configurations (AWS credentials, database passwords) should be stored in a `.env` file:
+All configurations (database credentials, AWS credentials, file paths, and pipeline control) are stored in the `.env` file:
 
 ```bash
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-AWS_ACCESS_KEY_ID=your_aws_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret
-S3_BUCKET_NAME=your-bucket-name
+# Database Configuration
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=postgres
+DB_LANDING_SCHEMA=pokemon_landing
+DB_MAIN_SCHEMA=pokemon
+
+# Database Tables
+DB_LANDING_TABLE=landing_pokemon_card
+DB_CARD_TABLE=card
+DB_CARD_INSTANCE_TABLE=card_instance
+DB_CARD_GRADE_TABLE=card_grade
+DB_SELLER_TABLE=seller
+
+# Lookup Tables
+DB_LANGUAGE_LOOKUP_TABLE=language
+DB_SET_LOOKUP_TABLE=card_set
+DB_GRADING_COMPANY_LOOKUP_TABLE=grading_company
+DB_GRADE_DESCRIPTION_LOOKUP_TABLE=grade_description
+DB_RARITY_LOOKUP_TABLE=rarity
+DB_CURRENCY_LOOKUP_TABLE=currency
+DB_PURCHASE_SOURCE_LOOKUP_TABLE=purchase_source
+
+# File Paths
+FILE_PATH=files/source_data/
+FILE_NAME=pokemon.xlsx
+FILE_SHEET_NAME=Pokemon Cards
+OUTPUT_FILE_PATH=files/processed_data/
+OUTPUT_FILE_NAME=pokemon_cards_processed.xlsx
+
+# S3 Configuration
+AWS_REGION=eu-west-2
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+S3_BUCKET_NAME=pokemon-app-demo-bucket
+S3_BUCKET_PREFIX=pokemon_data/
+
+# Pipeline Control Flags
+PIPELINE_CREATE_MODEL=True
+PIPELINE_CLEAR_LANDING=False
+PIPELINE_LIST_S3=True
+PIPELINE_UPLOAD_S3=True
+PIPELINE_DOWNLOAD_S3=False
 ```
 
 ### Logging
