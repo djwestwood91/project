@@ -1,18 +1,6 @@
 from references import *
 import pandas as pd
-from sqlalchemy import text
-
-# Helper: truncate a target table (keeps schema, resets identities)
-def truncate_table(schema, table, restart_identity, cascade=True):
-    stmt = f"TRUNCATE TABLE {schema}.{table}"
-    if restart_identity:
-        stmt += " RESTART IDENTITY"
-    if cascade:
-        stmt += " CASCADE"
-
-    with engine.begin() as conn:
-        conn.execute(text(stmt))
-    logger.info(f"Truncated table {schema}.{table}")
+from utils.db_utils import truncate_table
 
 # Functions to read from landing table and insert into lookup tables
 def read_landing_table_for_card_language_lookup():
