@@ -4,8 +4,8 @@ import pandas as pd
 
 def load_pokemon_cards_landing():
     try:
-        logger.info(f"Reading source data from {pokemon_card_file_path + pokemon_card_file_name}")
-        df = pd.read_excel(pokemon_card_file_path + pokemon_card_file_name, sheet_name=pokemon_card_sheet_name)
+        logger.info(f"Reading source data from {POKEMON_CARD_FILE_PATH + POKEMON_CARD_FILE_NAME}")
+        df = pd.read_excel(POKEMON_CARD_FILE_PATH + POKEMON_CARD_FILE_NAME, sheet_name=POKEMON_CARD_SHEET_NAME)
         
         # Define column mapping if needed 
         # this is to highlight the transformation from the source file column names to the landing table column names, 
@@ -48,8 +48,8 @@ def load_pokemon_cards_landing():
         # Add row_id to uniquely identify each landing record
         df_with_updated_mapping.insert(0, 'row_id', range(1, len(df_with_updated_mapping) + 1))
         
-        df_with_updated_mapping.to_sql('landing_pokemon_card', con=engine, schema=db_landing_schema, if_exists='append', index=False)
-        logger.info(f"Pokemon cards from {pokemon_card_file_path + pokemon_card_file_name} loaded successfully")
+        df_with_updated_mapping.to_sql('landing_pokemon_card', con=ENGINE, schema=DB_LANDING_SCHEMA, if_exists='append', index=False)
+        logger.info(f"Pokemon cards from {POKEMON_CARD_FILE_PATH + POKEMON_CARD_FILE_NAME} loaded successfully")
     except Exception as e:
         logger.error(f"Error loading pokemon cards: {e}")
         raise
@@ -57,8 +57,8 @@ def load_pokemon_cards_landing():
 def clear_landing_table(clear_landing_table_flag=True):
     try:
         if clear_landing_table_flag:
-            truncate_table(db_landing_schema, db_landing_table, restart_identity=True)
-            logger.info(f"{db_landing_table} landing table cleared successfully")
+            truncate_table(DB_LANDING_SCHEMA, DB_LANDING_TABLE, restart_identity=True)
+            logger.info(f"{DB_LANDING_TABLE} landing table cleared successfully")
     except Exception as e:
         logger.error(f"Error clearing landing table: {e}")
         raise

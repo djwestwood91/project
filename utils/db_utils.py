@@ -9,7 +9,7 @@ def truncate_table(schema, table, restart_identity, cascade=True):
     if cascade:
         stmt += " CASCADE"
 
-    with engine.begin() as conn:
+    with ENGINE.begin() as conn:
         conn.execute(text(stmt))
     logger.info(f"Truncated table {schema}.{table}")
 
@@ -18,12 +18,12 @@ def create_model(create_model_flag):
     try:
         if create_model_flag:
             # Read the SQL model file from environment variable
-            sql_file_path = db_model_file_path
+            sql_file_path = DB_MODEL_FILE_PATH
             with open(sql_file_path, 'r') as f:
                 sql_script = f.read()
             
             # Execute the SQL script
-            with engine.begin() as conn:
+            with ENGINE.begin() as conn:
                 conn.execute(text(sql_script))
             
             logger.info("Database model created successfully from model.sql")

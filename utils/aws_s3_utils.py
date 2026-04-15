@@ -71,12 +71,12 @@ def upload_file_to_s3(upload_flag):
         else:
             logger.info("S3 Upload flag is set to True. Proceeding with file upload.")
             # use s3_key as the path in the s3 bucket like a directory structure if needed
-            file_ref = pokemon_card_file_path + pokemon_card_file_name
+            file_ref = POKEMON_CARD_FILE_PATH + POKEMON_CARD_FILE_NAME
             s3_client = setup_s3_client()
             if s3_client is None:
                 logger.error("Failed to initialize S3 client")
                 return
-            s3_key = s3_bucket_prefix + pokemon_card_file_name
+            s3_key = s3_bucket_prefix + POKEMON_CARD_FILE_NAME
             s3_client.upload_file(file_ref, s3_bucket_name, s3_key)
             logger.info(f"Successfully uploaded {file_ref} to s3://{s3_bucket_name}/{s3_key}")
         
@@ -98,9 +98,9 @@ def download_file_from_s3(download_flag):
             if s3_client is None:
                 logger.error("Failed to initialize S3 client")
                 return
-            s3_key = s3_bucket_prefix + pokemon_card_file_name
+            s3_key = s3_bucket_prefix + POKEMON_CARD_FILE_NAME
             # Update these to use your actual output path variables
-            local_file_path = pokemon_card_file_path + pokemon_card_file_name
+            local_file_path = POKEMON_CARD_FILE_PATH + POKEMON_CARD_FILE_NAME
             s3_client.download_file(s3_bucket_name, s3_key, local_file_path)
             logger.info(f"Successfully downloaded s3://{s3_bucket_name}/{s3_key} to {local_file_path}")
         

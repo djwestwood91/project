@@ -8,11 +8,11 @@ def read_landing_table_for_card_instance_data():
         query = f"""SELECT distinct on (lpc.row_id)
                            lpc.row_id,
                            card_id
-                    FROM {db_landing_schema}.{db_landing_table} lpc
-                    JOIN {db_main_schema}.{db_card_table} cs ON lpc.card = cs.card
+                    FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE} lpc
+                    JOIN {DB_MAIN_SCHEMA}.{DB_CARD_TABLE} cs ON lpc.card = cs.card
                     ORDER BY lpc.row_id;"""
-        df = pd.read_sql(query, con=engine)
-        logger.info(f"{db_landing_table} table read successfully")
+        df = pd.read_sql(query, con=ENGINE)
+        logger.info(f"{DB_LANDING_TABLE} table read successfully")
         return df
     except Exception as e:
         logger.error(f"Error reading landing table: {e}")
@@ -24,8 +24,8 @@ def insert_card_instance_data():
         df = read_landing_table_for_card_instance_data()
         if df is not None:
             # Write the DataFrame to the main database table
-            df.to_sql(db_card_instance_table, con=engine, schema=db_main_schema, if_exists='append', index=False)
-            logger.info(f"{db_card_instance_table} data inserted successfully into main database")
+            df.to_sql(DB_CARD_INSTANCE_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            logger.info(f"{DB_CARD_INSTANCE_TABLE} data inserted successfully into main database")
     except Exception as e:
-        logger.error(f"Error inserting {db_card_instance_table} data: {e}")
+        logger.error(f"Error inserting {DB_CARD_INSTANCE_TABLE} data: {e}")
         raise

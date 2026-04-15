@@ -19,14 +19,14 @@ def read_landing_table_for_card_data():
                                'detail_2', card_additional_details_2,
                                'detail_3', card_additional_details_3
                            ) as extra_details
-                    FROM {db_landing_schema}.{db_landing_table} lpc
-                    JOIN {db_main_schema}.{db_set_lookup_table} cs ON lpc.card_set = cs.name
-                    JOIN {db_main_schema}.{db_language_lookup_table} cl ON lpc.card_language = cl.name
-                    JOIN {db_main_schema}.{db_rarity_lookup_table} cr ON lpc.card_rarity = cr.rarity
+                    FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE} lpc
+                    JOIN {DB_MAIN_SCHEMA}.{DB_SET_LOOKUP_TABLE} cs ON lpc.card_set = cs.name
+                    JOIN {DB_MAIN_SCHEMA}.{DB_LANGUAGE_LOOKUP_TABLE} cl ON lpc.card_language = cl.name
+                    JOIN {DB_MAIN_SCHEMA}.{DB_RARITY_LOOKUP_TABLE} cr ON lpc.card_rarity = cr.rarity
                     WHERE nullif(card, '') IS NOT NULL
                     ORDER BY row_id;"""
-        df = pd.read_sql(query, con=engine)
-        logger.info(f"{db_landing_table} table read successfully")
+        df = pd.read_sql(query, con=ENGINE)
+        logger.info(f"{DB_LANDING_TABLE} table read successfully")
         return df
     except Exception as e:
         logger.error(f"Error reading landing table: {e}")
@@ -35,13 +35,13 @@ def read_landing_table_for_card_data():
 def perform_quality_checks_on_card_data():
     try:
         # Example quality check: Ensure no null values in critical columns
-        query = f"""SELECT COUNT(*) FROM {db_main_schema}.{db_card_table} WHERE card IS NULL OR card_set_id IS NULL"""
-        result = pd.read_sql(query, con=engine)
+        query = f"""SELECT COUNT(*) FROM {DB_MAIN_SCHEMA}.{DB_CARD_TABLE} WHERE card IS NULL OR card_set_id IS NULL"""
+        result = pd.read_sql(query, con=ENGINE)
         # if the count of records with null values in critical columns is greater than 0, log a warning, otherwise log that the quality check passed
         if result.iloc[0, 0] > 0:
-            logger.warning(f"{db_card_table} Quality Check Failed: Found {result.iloc[0, 0]} records with null values in critical columns")
+            logger.warning(f"{DB_CARD_TABLE} Quality Check Failed: Found {result.iloc[0, 0]} records with null values in critical columns")
         else:
-            logger.info(f"{db_card_table} Quality Check Passed: No null values found in critical columns")
+            logger.info(f"{DB_CARD_TABLE} Quality Check Passed: No null values found in critical columns")
     except Exception as e:
         logger.error(f"Error performing quality checks on card data: {e}")
         raise
@@ -54,9 +54,9 @@ def insert_card_data():
             # Write the DataFrame to the main database table
             # Convert the extra_details column to JSON string format before inserting into the database
             df['extra_details'] = df['extra_details'].apply(lambda x: json.dumps(x) if isinstance(x, dict) else x)
-            df.to_sql(db_card_table, con=engine, schema=db_main_schema, if_exists='append', index=False)
-            logger.info(f"{db_card_table} data inserted successfully into main database")
+            df.to_sql(DB_CARD_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            logger.info(f"{DB_CARD_TABLE} data inserted successfully into main database")
             perform_quality_checks_on_card_data()
     except Exception as e:
-        logger.error(f"Error inserting {db_card_table} data: {e}")
+        logger.error(f"Error inserting {DB_CARD_TABLE} data: {e}")
         raise
