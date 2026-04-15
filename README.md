@@ -155,22 +155,37 @@ download_file_from_s3(download_flag=False)  # Set to True to download processed 
 
 ## Database Schema
 
-The pipeline uses two schemas:
+The pipeline uses two schemas with **full 3NF normalization**:
 
 - **pokemon_landing**: Intermediate schema for raw data ingestion
 - **pokemon**: Main schema for processed data storage
 
-Tables include:
-- `card`: Pokemon card information
-- `grade`: Grading/condition information
-- `grade_company`: Grading company lookup
-- `grade_description`: Grade description lookup
-- `language`: Language lookup
-- `set`: Pokemon set lookup
-- `rarity`: Card rarity lookup
-- `seller`: Seller information
-- `card_grade`: Card-to-grade relationships
-- `card_seller`: Card-to-seller relationships
+### Core Tables
+
+- **card**: Base Pokemon card data (logical cards) - references `card_set`, `language`, `rarity`
+- **card_instance**: Individual physical instances of cards - tracks each unique copy collected
+- **card_grade**: Grading information for card instances - links to `card_instance` and `grade_description`
+- **purchase**: Purchase transaction records - links `card_instance` to `seller`, tracks `currency` and `purchase_source`
+- **seller**: Seller information
+
+### Lookup Tables (Dimensions)
+
+- **card_set**: Pokemon set lookup
+- **language**: Card language lookup
+- **rarity**: Card rarity lookup
+- **grading_company**: Grading company lookup
+- **grade_description**: Grade descriptions - references `grading_company`
+- **currency**: Currency codes for purchases
+- **purchase_source**: Purchase source lookup
+
+### Data Lineage
+
+All source-derived tables include `row_id` for traceability:
+- `card.row_id` - Maps card to landing table source
+- `card_instance.row_id` - Maps individual card instance to landing table source
+- `card_grade.row_id` - Maps grade record to landing table source
+- `purchase.row_id` - Maps purchase record to landing table source
+- `seller.row_id` - Maps seller record to landing table source
 
 ## Configuration
 

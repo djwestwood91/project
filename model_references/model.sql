@@ -82,8 +82,7 @@ create table if not exists pokemon.rarity (
 drop table if exists pokemon.currency;
 create table if not exists pokemon.currency (
   currency_id serial primary key,
-  currency_code text not null unique,
-  currency_name text not null unique
+  currency_code text not null unique
 );
 
 drop table if exists pokemon.purchase_source;

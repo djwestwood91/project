@@ -154,3 +154,73 @@ def insert_rarity_lookup_data():
     except Exception as e:
         logger.error(f"Error inserting pokemon card rarity lookup data: {e}")
         raise
+
+# Functions for currency lookup
+def read_landing_table_for_currency_lookup():
+    try:
+        # Read the landing table from the database
+        query = f"""SELECT distinct card_purchase_price_currency as currency_code
+                    FROM {db_landing_schema}.{db_landing_table}
+                    WHERE nullif(card_purchase_price_currency, '') IS NOT NULL
+                    UNION
+                    SELECT distinct postage_fees_currency as currency_code
+                    FROM {db_landing_schema}.{db_landing_table}
+                    WHERE nullif(postage_fees_currency, '') IS NOT NULL
+                    ORDER BY currency_code"""
+        
+        df = pd.read_sql(query, con=engine)
+        logger.info(f"Currency lookup data read successfully from {db_landing_table}")
+        return df
+    except Exception as e:
+        logger.error(f"Error reading landing table for currency: {e}")
+        raise
+    
+def insert_currency_lookup_data():
+    try:
+        # Read the landing table data
+        df = read_landing_table_for_currency_lookup()
+        if df is not None and not df.empty:
+            # Clean/reload lookup table
+            truncate_table(db_main_schema, db_currency_lookup_table, restart_identity=True)
+
+            # Write the DataFrame to the main database table
+            df.to_sql(db_currency_lookup_table, con=engine, schema=db_main_schema, if_exists='append', index=False)
+            logger.info("Currency lookup data inserted successfully into main database")
+        else:
+            logger.warning("No currency data found in landing table")
+    except Exception as e:
+        logger.error(f"Error inserting currency lookup data: {e}")
+        raise
+
+# Functions for purchase source lookup
+def read_landing_table_for_purchase_source_lookup():
+    try:
+        # Read the landing table from the database
+        query = f"""SELECT distinct card_source as source
+                    FROM {db_landing_schema}.{db_landing_table}
+                    WHERE nullif(card_source, '') IS NOT NULL
+                    ORDER BY source"""
+        
+        df = pd.read_sql(query, con=engine)
+        logger.info(f"Purchase source lookup data read successfully from {db_landing_table}")
+        return df
+    except Exception as e:
+        logger.error(f"Error reading landing table for purchase source: {e}")
+        raise
+    
+def insert_purchase_source_lookup_data():
+    try:
+        # Read the landing table data
+        df = read_landing_table_for_purchase_source_lookup()
+        if df is not None and not df.empty:
+            # Clean/reload lookup table
+            truncate_table(db_main_schema, db_purchase_source_lookup_table, restart_identity=True)
+
+            # Write the DataFrame to the main database table
+            df.to_sql(db_purchase_source_lookup_table, con=engine, schema=db_main_schema, if_exists='append', index=False)
+            logger.info("Purchase source lookup data inserted successfully into main database")
+        else:
+            logger.warning("No purchase source data found in landing table")
+    except Exception as e:
+        logger.error(f"Error inserting purchase source lookup data: {e}")
+        raise

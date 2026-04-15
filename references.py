@@ -3,20 +3,32 @@ from sqlalchemy import create_engine
 import logging
 import os
 from dotenv import load_dotenv
+import sys
+import io
+
+load_dotenv()
 
 # logger initialization
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s %(name)s %(message)s',
     handlers=[
-        logging.FileHandler("db.log"),
+        logging.FileHandler("db.log", encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger("PokeLog")
 
-logger.info("Initializing database connection...")
-load_dotenv()
+# Configure UTF-8 encoding for console output on Windows
+# Windows is 'nt', other OSes are 'posix'
+if os.name == 'nt':
+    # Reconfigure stderr to use UTF-8
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8')
+    # Update the StreamHandler encoding
+    for handler in logging.root.handlers:
+        if isinstance(handler, logging.StreamHandler):
+            handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(name)s %(message)s'))
 
 db_user = os.getenv("DB_USER", "postgres")
 db_password = os.getenv("DB_PASSWORD", "")
