@@ -8,10 +8,13 @@ This project automates the ingestion, transformation, and storage of Pokemon car
 
 - **S3 Integration**: Upload/download files to/from AWS S3 bucket
 - **Landing Layer**: Process raw Pokemon card data into a landing schema
-- **Lookup Tables**: Populate reference data (language, sets, grading companies, grades, rarity, currency, purchase source)
+- **Landing Validation**: Validate landing table data quality before processing
+- **Lookup Tables**: Populate reference data (language, sets, grading companies, grades, rarity, currency, purchase source, countries)
 - **Card Processing**: Insert and manage card data with full 3NF normalization
 - **Card Instance Tracking**: Track individual physical instances of each card
 - **Grade Processing**: Handle card grading information with lineage tracking
+- **Seller Processing**: Extract and load seller/vendor information
+- **Purchase Processing**: Track purchase transactions with pricing and source data
 
 ## Project Structure
 
@@ -20,12 +23,16 @@ project/
 ├── main.py                          # Main pipeline orchestrator
 ├── references.py                    # Database and file path configurations
 ├── card.py                          # Card data processing logic
+├── card_instance.py                 # Card instance data processing logic
 ├── grade.py                         # Grade data processing logic
+├── seller.py                        # Seller data processing logic
+├── purchase.py                      # Purchase transaction processing logic
 ├── utils/
 │   ├── aws_s3_utils.py              # AWS S3 client and operations
 │   └── db_utils.py                  # Database utilities (model creation, table clearing)
 ├── landing/
-│   └── pokemon_cards_landing.py     # Landing layer data processing
+│   ├── pokemon_cards_landing.py     # Landing layer data processing
+│   └── landing_validation.py        # Landing table data quality validation
 ├── lookup/
 │   └── lookup_values_load.py        # Lookup table population
 ├── model_references/
@@ -96,7 +103,9 @@ The `main.py` script orchestrates a data-driven pipeline with the following work
 
 5. **Load Landing Data**: Processes raw Pokemon card CSV/Excel data into the landing table
 
-6. **Load Lookup Tables**: Populates reference/dimension tables (data-driven approach):
+6. **Validate Landing Data**: Performs quality checks on landing table data before downstream processing
+
+7. **Load Lookup Tables**: Populates reference/dimension tables (data-driven approach):
    - Languages
    - Card Sets
    - Grading Companies
@@ -104,24 +113,28 @@ The `main.py` script orchestrates a data-driven pipeline with the following work
    - Card Rarity Levels
    - Currencies
    - Purchase Sources
-   - Countries 
+   - Countries
 
-7. **Load Card Data**: Inserts normalized card records into the main `pokemon.card` table with source traceability
+8. **Load Card Data**: Inserts normalized card records into the main `pokemon.card` table with source traceability
 
-8. **Load Card Instance Data**: Creates individual card instance records tracking each unique physical copy collected
+9. **Load Card Instance Data**: Creates individual card instance records tracking each unique physical copy collected
 
-9. **Load Grade Data**: Processes and inserts card grading information into the `pokemon.card_grade` table linked to card instances
+10. **Load Grade Data**: Processes and inserts card grading information into the `pokemon.card_grade` table linked to card instances
 
-10. **Download from S3**: Optionally downloads processed files from S3 for archive/verification
+11. **Load Seller Data**: Extracts and inserts seller/vendor information into the `pokemon.seller` table
+
+12. **Load Purchase Data**: Inserts purchase transaction records linking card instances to sellers with pricing and source information
+
+13. **Download from S3**: Optionally downloads processed files from S3 for archive/verification
     - Controlled by `PIPELINE_DOWNLOAD_S3` environment variable (default: False)
 
 ### Pipeline Logging
-- Each step is numbered and tracked (e.g., "[Step 1/14]")
+- Each step is numbered and tracked (e.g., "[Step 1/18]")
 - Status indicators: `[OK]` for success, `[FAIL]` for errors
 - All operations logged to both console and `db.log`
 - If pipeline fails, the exact failing step is reported
 
-### Optional Features (Currently Disabled)
+### Active Data Processing Features
 - **Seller data processing**: Extract and load seller/vendor information from source data
 - **Purchase transaction processing**: Extract and load purchase details including price, fees, purchase source, and purchase date
 
@@ -145,7 +158,8 @@ This will run both `run_db_utils()` and `run_poke_pipeline()` functions sequenti
 
 **`run_poke_pipeline()`**
 - Executes the full data processing workflow
-- Includes S3 operations, landing load, lookup population, and card/grade insertion
+- Includes S3 operations, landing load, lookup population, card/instance/grade insertion
+- Loads seller and purchase transaction data
 - Logs all operations to console and `db.log`
 
 ### Controlling Pipeline Behavior
@@ -205,6 +219,7 @@ The pipeline uses two schemas with **full 3NF normalization**:
 - **grade_description**: Grade descriptions - references `grading_company`
 - **currency**: Currency codes for purchases
 - **purchase_source**: Purchase source lookup
+- **country**: Country lookup
 
 ### Data Lineage
 
@@ -248,6 +263,7 @@ DB_GRADE_DESCRIPTION_LOOKUP_TABLE=grade_description
 DB_RARITY_LOOKUP_TABLE=rarity
 DB_CURRENCY_LOOKUP_TABLE=currency
 DB_PURCHASE_SOURCE_LOOKUP_TABLE=purchase_source
+DB_COUNTRY_LOOKUP_TABLE=country
 
 # File Paths
 FILE_PATH=files/source_data/
