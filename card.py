@@ -1,5 +1,4 @@
 from references import *
-import pandas as pd
 import json
 
 def read_landing_table_for_card_data():
@@ -18,7 +17,8 @@ def read_landing_table_for_card_data():
                                'detail_1', card_additional_details_1,
                                'detail_2', card_additional_details_2,
                                'detail_3', card_additional_details_3
-                           ) as extra_details
+                           ) as extra_details,
+                           image_reference as card_image_reference
                     FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE} lpc
                     JOIN {DB_MAIN_SCHEMA}.{DB_SET_LOOKUP_TABLE} cs ON lpc.card_set = cs.name
                     JOIN {DB_MAIN_SCHEMA}.{DB_LANGUAGE_LOOKUP_TABLE} cl ON lpc.card_language = cl.name

@@ -239,6 +239,7 @@ DB_CARD_GRADE_TABLE=card_grade
 DB_SELLER_TABLE=seller
 DB_PURCHASE_TABLE=purchase
 
+
 # Lookup Tables
 DB_LANGUAGE_LOOKUP_TABLE=language
 DB_SET_LOOKUP_TABLE=card_set

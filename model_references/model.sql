@@ -26,16 +26,15 @@ create table if not exists pokemon_landing.landing_pokemon_card (
   card_additional_details_2 text,
   card_additional_details_3 text,
   card_purchase_price numeric,
-  card_purchase_price_currency text,
   postage_fees numeric,
-  postage_fees_currency text,
-  card_total numeric,
-  card_total_currency text,
+  total_price numeric,
+  card_currency text,
   card_date_purchased date,
   card_source text,
   card_seller text,
   website text,
   seller_country text,
+  image_reference text,
   created_at timestamptz not null default now()
 );
 
@@ -111,6 +110,7 @@ create table if not exists pokemon.card (
   card_language_id int references pokemon.language(language_id),
   card_rarity_id int references pokemon.rarity(rarity_id),
   extra_details jsonb,
+  card_image_reference text,
   created_at timestamptz not null default now()
 );
 
@@ -159,9 +159,11 @@ create table if not exists pokemon.purchase (
   purchase_id bigint generated always as identity primary key,
   row_id int,
   card_instance_id bigint not null references pokemon.card_instance(card_instance_id),
-  seller_id bigint not null references pokemon.seller(seller_id),
   grade_id bigint references pokemon.card_grade(grade_id),
+  seller_id bigint not null references pokemon.seller(seller_id),
   purchase_price numeric,
+  postage_fees numeric,
+  total_price numeric,
   currency_id int references pokemon.currency(currency_id),
   purchase_source_id int references pokemon.purchase_source(purchase_source_id),
   date_purchased date,

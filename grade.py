@@ -1,5 +1,4 @@
 from references import *
-import pandas as pd
 
 def read_landing_table_for_grade_data():
     try:

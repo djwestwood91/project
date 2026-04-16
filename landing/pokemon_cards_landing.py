@@ -1,6 +1,5 @@
 from references import *
 from utils.db_utils import truncate_table
-import pandas as pd
 
 def load_pokemon_cards_landing():
     """
@@ -55,16 +54,15 @@ def load_pokemon_cards_landing():
                                     'Additional Details 2': 'card_additional_details_2',
                                     'Additional Details 3': 'card_additional_details_3',
                                     'Purchase Price': 'card_purchase_price',
-                                    'Purchase Price Currency': 'card_purchase_price_currency',
                                     'Postage Fees': 'postage_fees',
-                                    'Postage Fees Currency': 'postage_fees_currency',
-                                    'Total': 'card_total',
-                                    'Total Currency': 'card_total_currency',
+                                    'Total': 'total_price',
+                                    'Card Currency': 'card_currency',
                                     'Date Purchased': 'card_date_purchased',
                                     'Source': 'card_source',
                                     'Seller': 'card_seller',
                                     'Website': 'website',
-                                    'Seller Country': 'seller_country'
+                                    'Seller Country': 'seller_country',
+                                    'Image Reference': 'image_reference'
                                 }
 
         # Rename columns in the DataFrame to determine landing table schema

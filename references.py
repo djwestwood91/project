@@ -4,6 +4,7 @@ import logging
 import os
 from dotenv import load_dotenv
 import sys
+import pandas as pd
 
 load_dotenv()
 

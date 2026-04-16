@@ -1,6 +1,4 @@
 from references import *
-import pandas as pd
-import json
 
 def read_landing_table_for_card_instance_data():
     try:

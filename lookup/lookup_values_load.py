@@ -1,5 +1,4 @@
 from references import *
-import pandas as pd
 from utils.db_utils import truncate_table
 
 # Functions to read from landing table and insert into lookup tables
@@ -159,13 +158,9 @@ def insert_rarity_lookup_data():
 def read_landing_table_for_currency_lookup():
     try:
         # Read the landing table from the database
-        query = f"""SELECT distinct card_purchase_price_currency as currency_code
+        query = f"""SELECT distinct card_currency as currency_code
                     FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE}
-                    WHERE nullif(card_purchase_price_currency, '') IS NOT NULL
-                    UNION
-                    SELECT distinct postage_fees_currency as currency_code
-                    FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE}
-                    WHERE nullif(postage_fees_currency, '') IS NOT NULL
+                    WHERE nullif(card_currency, '') IS NOT NULL
                     ORDER BY currency_code"""
         
         df = pd.read_sql(query, con=ENGINE)
