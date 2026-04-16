@@ -3,12 +3,11 @@ from references import *
 def read_landing_table_for_card_instance_data():
     try:
         # Read the landing table from the database
-        query = f"""SELECT distinct on (lpc.row_id)
-                           lpc.row_id,
+        query = f"""SELECT lpc.row_id,
                            card_id
                     FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE} lpc
                     JOIN {DB_MAIN_SCHEMA}.{DB_CARD_TABLE} cs ON lpc.card = cs.card
-                    ORDER BY lpc.row_id;"""
+                     AND cs.row_id = lpc.row_id"""
         df = pd.read_sql(query, con=ENGINE)
         logger.info(f"{DB_LANDING_TABLE} table read successfully")
         return df

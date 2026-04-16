@@ -1,7 +1,9 @@
+from landing.landing_validation import run_landing_data_validation
 from references import *
 from utils.db_utils import *
 from utils.aws_s3_utils import *
 from landing.pokemon_cards_landing import *
+from landing.landing_validation import *
 from lookup.lookup_values_load import (
     insert_grade_description_lookup_data, 
     insert_grading_company_lookup_data, 
@@ -16,6 +18,7 @@ from card import *
 from card_instance import *
 from grade import *
 from seller import *
+from purchase import *
 
 def run_db_utils():
     try:
@@ -65,7 +68,7 @@ def run_poke_pipeline():
         logger.info("=" * 60)
         
         step = 0
-        total_steps = 16
+        total_steps = 18
         
         # Step 1: List S3 objects
         step += 1
@@ -90,6 +93,12 @@ def run_poke_pipeline():
         logger.info(f"[Step {step}/{total_steps}] Loading landing data...")
         load_pokemon_cards_landing()
         logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} Landing data loaded")
+
+        # Step 3.1: Validate landing data
+        step += 1
+        logger.info(f"[Step {step}/{total_steps}] Validating landing data...")
+        run_landing_data_validation()
+        logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} Landing data validation complete")
         
         # Step 4-9: Load lookup tables
         lookup_tables = [
@@ -132,8 +141,14 @@ def run_poke_pipeline():
         logger.info(f"[Step {step}/{total_steps}] Inserting seller data...")
         insert_seller_data()
         logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} Seller data inserted")
+
+        # Step 16: Insert purchase data
+        step += 1
+        logger.info(f"[Step {step}/{total_steps}] Inserting purchase data...")
+        insert_purchase_data()
+        logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} Purchase data inserted")
         
-        # Step 16: Download from S3
+        # Step 17: Download from S3
         step += 1
         if PIPELINE_DOWNLOAD_S3:
             logger.info(f"[Step {step}/{total_steps}] Downloading from S3...")

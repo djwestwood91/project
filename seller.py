@@ -10,7 +10,7 @@ def read_landing_table_for_seller_data():
                            website,
                            country_id
                     FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE} lpc
-                    JOIN {DB_MAIN_SCHEMA}.{DB_COUNTRY_LOOKUP_TABLE} cl ON lpc.seller_country = cl.country
+                    LEFT JOIN {DB_MAIN_SCHEMA}.{DB_COUNTRY_LOOKUP_TABLE} cl ON lpc.seller_country = cl.country
                     WHERE nullif((trim(lower(card_seller))), '') IS NOT NULL
                     ORDER BY row_id, trim(lower(card_seller)), trim(lower(website));"""
         df = pd.read_sql(query, con=ENGINE)
