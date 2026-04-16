@@ -74,7 +74,7 @@ def load_pokemon_cards_landing():
         df_with_updated_mapping.to_sql('landing_pokemon_card', con=ENGINE, schema=DB_LANDING_SCHEMA, if_exists='append', index=False)
         logger.info(f"Pokemon cards from {POKEMON_CARD_FILE_PATH + POKEMON_CARD_FILE_NAME} loaded successfully")
     except Exception as e:
-        logger.error(f"Error loading pokemon cards: {e}")
+        logger.error(f"Error loading pokemon cards: {str(e)}", exc_info=True)
         raise
 
 def clear_landing_table(clear_landing_table_flag=True):
@@ -83,5 +83,5 @@ def clear_landing_table(clear_landing_table_flag=True):
             truncate_table(DB_LANDING_SCHEMA, DB_LANDING_TABLE, restart_identity=True)
             logger.info(f"{DB_LANDING_TABLE} landing table cleared successfully")
     except Exception as e:
-        logger.error(f"Error clearing landing table: {e}")
+        logger.error(f"Error clearing landing table: {str(e)}", exc_info=True)
         raise

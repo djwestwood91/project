@@ -12,7 +12,7 @@ def read_landing_table_for_card_instance_data():
         logger.info(f"{DB_LANDING_TABLE} table read successfully")
         return df
     except Exception as e:
-        logger.error(f"Error reading landing table: {e}")
+        logger.error(f"Error reading landing table: {str(e)}", exc_info=True)
         raise
     
 def insert_card_instance_data():
@@ -24,5 +24,5 @@ def insert_card_instance_data():
             df.to_sql(DB_CARD_INSTANCE_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
             logger.info(f"{DB_CARD_INSTANCE_TABLE} data inserted successfully into main database")
     except Exception as e:
-        logger.error(f"Error inserting {DB_CARD_INSTANCE_TABLE} data: {e}")
+        logger.error(f"Error inserting {DB_CARD_INSTANCE_TABLE} data: {str(e)}", exc_info=True)
         raise

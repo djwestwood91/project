@@ -33,7 +33,7 @@ def run_db_utils():
                 create_model(create_model_flag=True)
                 logger.info(f"[Step 1/2] {STATUS_OK} Database model created successfully")
             except Exception as e:
-                logger.error(f"[Step 1/2] {STATUS_FAIL} Failed to create database model: {e}")
+                logger.error(f"[Step 1/2] {STATUS_FAIL} Failed to create database model: {str(e)}", exc_info=True)
                 raise
         else:
             logger.info("[Step 1/2] Skipping database model creation (PIPELINE_CREATE_MODEL=False)")
@@ -45,7 +45,7 @@ def run_db_utils():
                 clear_landing_table(clear_landing_table_flag=True)
                 logger.info(f"[Step 2/2] {STATUS_OK} Landing table cleared successfully")
             except Exception as e:
-                logger.error(f"[Step 2/2] {STATUS_FAIL} Failed to clear landing table: {e}")
+                logger.error(f"[Step 2/2] {STATUS_FAIL} Failed to clear landing table: {str(e)}", exc_info=True)
                 raise
         else:
             logger.info("[Step 2/2] Skipping landing table clear (PIPELINE_CLEAR_LANDING=False)")
@@ -55,7 +55,7 @@ def run_db_utils():
         logger.info("=" * 60)
         
     except Exception as e:
-        logger.error(f"Error in database setup: {e}")
+        logger.error(f"Error in database setup: {str(e)}", exc_info=True)
         raise
 
 def run_poke_pipeline():
@@ -74,8 +74,12 @@ def run_poke_pipeline():
         step += 1
         if PIPELINE_LIST_S3:
             logger.info(f"[Step {step}/{total_steps}] Listing S3 objects...")
-            list_objects(list_objects_flag=True)
-            logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} S3 objects listed")
+            try:
+                list_objects(list_objects_flag=True)
+                logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} S3 objects listed")
+            except Exception as e:
+                logger.error(f"[Step {step}/{total_steps}] {STATUS_FAIL} Failed to list S3 objects: {str(e)}", exc_info=True)
+                raise
         else:
             logger.info(f"[Step {step}/{total_steps}] Skipping S3 list (PIPELINE_LIST_S3=False)")
         
@@ -162,7 +166,7 @@ def run_poke_pipeline():
         logger.info("=" * 60)
             
     except Exception as e:
-        logger.error(f"{STATUS_FAIL} Pipeline failed at step {step}: {e}")
+        logger.error(f"{STATUS_FAIL} Pipeline failed at step {step}: {str(e)}", exc_info=True)
         raise
 
 if __name__ == "__main__":

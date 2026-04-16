@@ -23,7 +23,7 @@ def read_landing_table_for_grade_data():
         logger.info(f"{DB_LANDING_TABLE} table read successfully for grade data")
         return df
     except Exception as e:
-        logger.error(f"Error reading landing table: {e}")
+        logger.error(f"Error reading landing table: {str(e)}", exc_info=True)
         raise
     
 def perform_quality_checks_on_grade_data():
@@ -37,7 +37,7 @@ def perform_quality_checks_on_grade_data():
         else:
             logger.info(f"{DB_CARD_GRADE_TABLE} Quality Check Passed: No null values found in critical columns")
     except Exception as e:
-        logger.error(f"Error performing quality checks on grade data: {e}")
+        logger.error(f"Error performing quality checks on grade data: {str(e)}", exc_info=True)
         raise
 
 def insert_grade_data():
@@ -50,5 +50,5 @@ def insert_grade_data():
             logger.info(f"{DB_CARD_GRADE_TABLE} data inserted successfully into main database")
             perform_quality_checks_on_grade_data()
     except Exception as e:
-        logger.error(f"Error inserting {DB_CARD_GRADE_TABLE} data: {e}")
+        logger.error(f"Error inserting {DB_CARD_GRADE_TABLE} data: {str(e)}", exc_info=True)
         raise

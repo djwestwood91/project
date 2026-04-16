@@ -5,6 +5,8 @@ import os
 from dotenv import load_dotenv
 import sys
 import pandas as pd
+import boto3
+from botocore.exceptions import ClientError
 
 load_dotenv()
 
@@ -81,6 +83,13 @@ PIPELINE_LIST_S3 = os.getenv("PIPELINE_LIST_S3", "True").lower() == "true"
 PIPELINE_UPLOAD_S3 = os.getenv("PIPELINE_UPLOAD_S3", "True").lower() == "true"
 PIPELINE_DOWNLOAD_S3 = os.getenv("PIPELINE_DOWNLOAD_S3", "False").lower() == "true"
 
+# AWS Configuration
+AWS_REGION = os.getenv("AWS_REGION")
+AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+S3_BUCKET_PREFIX = os.getenv("S3_BUCKET_PREFIX", "")
+
 logger.info(f"Initializing database connection to {DB_NAME}...")
 
 # password = getpass.getpass("Enter database password: ")
@@ -92,5 +101,5 @@ try:
     with ENGINE.connect() as connection:
         logger.info(f"Database Connection to {DB_NAME} successful")
 except Exception as e:
-    logger.error(f"Connection failed: {e}")
+    logger.error(f"Connection failed: {str(e)}", exc_info=True)
     raise

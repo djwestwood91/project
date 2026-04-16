@@ -28,7 +28,7 @@ def insert_language_lookup_data():
             df.to_sql(DB_LANGUAGE_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
             logger.info("Pokemon card language lookup data inserted successfully into main database")
     except Exception as e:
-        logger.error(f"Error inserting pokemon card language lookup data: {e}")
+        logger.error(f"Error inserting pokemon card language lookup data: {str(e)}", exc_info=True)
         raise
 
 # Functions for card set lookup
@@ -60,7 +60,7 @@ def insert_set_lookup_data():
             df.to_sql(DB_SET_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
             logger.info("Pokemon card set lookup data inserted successfully into main database")
     except Exception as e:
-        logger.error(f"Error inserting pokemon card set lookup data: {e}")
+        logger.error(f"Error inserting pokemon card set lookup data: {str(e)}", exc_info=True)
         raise
 
 def read_landing_table_for_grading_company_lookup():
@@ -75,7 +75,7 @@ def read_landing_table_for_grading_company_lookup():
         logger.info(f"{DB_LANDING_TABLE} table read successfully")
         return df
     except Exception as e:
-        logger.error(f"Error reading landing table: {e}")
+        logger.error(f"Error reading landing table: {str(e)}", exc_info=True)
         raise
     
 def insert_grading_company_lookup_data():
@@ -90,7 +90,7 @@ def insert_grading_company_lookup_data():
             df.to_sql(DB_GRADING_COMPANY_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
             logger.info("Pokemon card grading company lookup data inserted successfully into main database")
     except Exception as e:
-        logger.error(f"Error inserting pokemon card grading company lookup data: {e}")
+        logger.error(f"Error inserting pokemon card grading company lookup data: {str(e)}", exc_info=True)
         raise
 
 def read_landing_table_for_grading_description_lookup():
@@ -107,7 +107,7 @@ def read_landing_table_for_grading_description_lookup():
         logger.info(f"{DB_LANDING_TABLE} table read successfully")
         return df
     except Exception as e:
-        logger.error(f"Error reading landing table: {e}")
+        logger.error(f"Error reading landing table: {str(e)}", exc_info=True)
         raise
     
 def insert_grade_description_lookup_data():
@@ -122,7 +122,7 @@ def insert_grade_description_lookup_data():
             df.to_sql(DB_GRADE_DESCRIPTION_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
             logger.info("Pokemon card grading description lookup data inserted successfully into main database")
     except Exception as e:
-        logger.error(f"Error inserting pokemon card grading description lookup data: {e}")
+        logger.error(f"Error inserting pokemon card grading description lookup data: {str(e)}", exc_info=True)
         raise
 
 def read_landing_table_for_rarity_lookup():
@@ -136,7 +136,7 @@ def read_landing_table_for_rarity_lookup():
         logger.info(f"{DB_LANDING_TABLE} table read successfully")
         return df
     except Exception as e:
-        logger.error(f"Error reading landing table: {e}")
+        logger.error(f"Error reading landing table: {str(e)}", exc_info=True)
         raise
     
 def insert_rarity_lookup_data():
@@ -151,7 +151,7 @@ def insert_rarity_lookup_data():
             df.to_sql(DB_RARITY_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
             logger.info("Pokemon card rarity lookup data inserted successfully into main database")
     except Exception as e:
-        logger.error(f"Error inserting pokemon card rarity lookup data: {e}")
+        logger.error(f"Error inserting pokemon card rarity lookup data: {str(e)}", exc_info=True)
         raise
 
 # Functions for currency lookup
@@ -167,7 +167,7 @@ def read_landing_table_for_currency_lookup():
         logger.info(f"Currency lookup data read successfully from {DB_LANDING_TABLE}")
         return df
     except Exception as e:
-        logger.error(f"Error reading landing table for currency: {e}")
+        logger.error(f"Error reading landing table for currency: {str(e)}", exc_info=True)
         raise
     
 def insert_currency_lookup_data():
@@ -184,7 +184,7 @@ def insert_currency_lookup_data():
         else:
             logger.warning("No currency data found in landing table")
     except Exception as e:
-        logger.error(f"Error inserting currency lookup data: {e}")
+        logger.error(f"Error inserting currency lookup data: {str(e)}", exc_info=True)
         raise
 
 # Functions for purchase source lookup
@@ -200,7 +200,7 @@ def read_landing_table_for_purchase_source_lookup():
         logger.info(f"Purchase source lookup data read successfully from {DB_LANDING_TABLE}")
         return df
     except Exception as e:
-        logger.error(f"Error reading landing table for purchase source: {e}")
+        logger.error(f"Error reading landing table for purchase source: {str(e)}", exc_info=True)
         raise
     
 def insert_purchase_source_lookup_data():
@@ -217,7 +217,7 @@ def insert_purchase_source_lookup_data():
         else:
             logger.warning("No purchase source data found in landing table")
     except Exception as e:
-        logger.error(f"Error inserting purchase source lookup data: {e}")
+        logger.error(f"Error inserting purchase source lookup data: {str(e)}", exc_info=True)
         raise
 
 def read_landing_table_for_country_lookup():
@@ -232,7 +232,7 @@ def read_landing_table_for_country_lookup():
         logger.info(f"Country lookup data read successfully from {DB_LANDING_TABLE}")
         return df
     except Exception as e:
-        logger.error(f"Error reading landing table for country lookup: {e}")
+        logger.error(f"Error reading landing table for country lookup: {str(e)}", exc_info=True)
         raise
 
 def insert_country_lookup_data():
@@ -249,5 +249,5 @@ def insert_country_lookup_data():
         else:
             logger.warning("No country lookup data found in landing table")
     except Exception as e:
-        logger.error(f"Error inserting country lookup data: {e}")
+        logger.error(f"Error inserting country lookup data: {str(e)}", exc_info=True)
         raise

@@ -17,7 +17,7 @@ def read_landing_table_for_seller_data():
         logger.info(f"{DB_LANDING_TABLE} table read successfully")
         return df
     except Exception as e:
-        logger.error(f"Error reading landing table: {e}")
+        logger.error(f"Error reading landing table: {str(e)}", exc_info=True)
         raise
 
 def perform_quality_checks_on_seller_data():
@@ -31,7 +31,7 @@ def perform_quality_checks_on_seller_data():
         else:
             logger.info(f"{DB_SELLER_TABLE} Quality Check Passed: No null values found in critical columns")
     except Exception as e:
-        logger.error(f"Error performing quality checks on seller data: {e}")
+        logger.error(f"Error performing quality checks on seller data: {str(e)}", exc_info=True)
         raise
     
 def insert_seller_data():
@@ -44,5 +44,5 @@ def insert_seller_data():
             logger.info(f"{DB_SELLER_TABLE} data inserted successfully into main database")
             perform_quality_checks_on_seller_data()
     except Exception as e:
-        logger.error(f"Error inserting {DB_SELLER_TABLE} data: {e}")
+        logger.error(f"Error inserting {DB_SELLER_TABLE} data: {str(e)}", exc_info=True)
         raise

@@ -27,7 +27,7 @@ def read_landing_table_for_purchase_data():
         logger.info(f"{DB_LANDING_TABLE} table read successfully for purchase data")
         return df
     except Exception as e:
-        logger.error(f"Error reading landing table for purchase data: {e}")
+        logger.error(f"Error reading landing table for purchase data: {str(e)}", exc_info=True)
         raise
     
 def perform_quality_checks_on_purchase_data():
@@ -41,7 +41,7 @@ def perform_quality_checks_on_purchase_data():
         else:
             logger.info(f"{DB_PURCHASE_TABLE} Quality Check Passed: No null values found in critical columns")
     except Exception as e:
-        logger.error(f"Error performing quality checks on purchase data: {e}")
+        logger.error(f"Error performing quality checks on purchase data: {str(e)}", exc_info=True)
         raise
 
 def insert_purchase_data():
@@ -54,5 +54,5 @@ def insert_purchase_data():
             logger.info(f"{DB_PURCHASE_TABLE} data inserted successfully into main database")
             perform_quality_checks_on_purchase_data()
     except Exception as e:
-        logger.error(f"Error inserting {DB_PURCHASE_TABLE} data: {e}")
+        logger.error(f"Error inserting {DB_PURCHASE_TABLE} data: {str(e)}", exc_info=True)
         raise
