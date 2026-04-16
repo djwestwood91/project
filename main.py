@@ -1,3 +1,7 @@
+from references import *
+from utils.db_utils import *
+from utils.aws_s3_utils import *
+from landing.pokemon_cards_landing import *
 from lookup.lookup_values_load import (
     insert_grade_description_lookup_data, 
     insert_grading_company_lookup_data, 
@@ -5,15 +9,13 @@ from lookup.lookup_values_load import (
     insert_rarity_lookup_data, 
     insert_set_lookup_data,
     insert_currency_lookup_data,
-    insert_purchase_source_lookup_data
+    insert_purchase_source_lookup_data,
+    insert_country_lookup_data
 )
-from references import *
-from utils.aws_s3_utils import *
-from landing.pokemon_cards_landing import *
 from card import *
 from card_instance import *
 from grade import *
-from utils.db_utils import *
+from seller import *
 
 def run_db_utils():
     try:
@@ -63,7 +65,7 @@ def run_poke_pipeline():
         logger.info("=" * 60)
         
         step = 0
-        total_steps = 12
+        total_steps = 16
         
         # Step 1: List S3 objects
         step += 1
@@ -98,34 +100,40 @@ def run_poke_pipeline():
             (f"[Step {step+5}/{total_steps}]", "Rarity", insert_rarity_lookup_data),
             (f"[Step {step+6}/{total_steps}]", "Currency", insert_currency_lookup_data),
             (f"[Step {step+7}/{total_steps}]", "Purchase Source", insert_purchase_source_lookup_data),
+            (f"[Step {step+8}/{total_steps}]", "Country", insert_country_lookup_data)
         ]
         
-        for step_label, table_name, insert_func in lookup_tables:
+        for step_label, table_name, insert_lookup_func in lookup_tables:
             logger.info(f"{step_label} Loading {table_name} lookup...")
-            insert_func()
+            insert_lookup_func()
             logger.info(f"{step_label} {STATUS_OK} {table_name} lookup loaded")
             step += 1
         
-        # Step 11: Insert card data
+        # Step 12: Insert card data
         step += 1
         logger.info(f"[Step {step}/{total_steps}] Inserting card data...")
         insert_card_data()
         logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} Card data inserted")
         
-        # Step 12: Insert card instance data
+        # Step 13: Insert card instance data
         step += 1
         logger.info(f"[Step {step}/{total_steps}] Inserting card instance data...")
         insert_card_instance_data()
         logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} Card instance data inserted")
         
-        # Step 13: Insert grade data
+        # Step 14: Insert grade data
         step += 1
-        total_steps = 14
         logger.info(f"[Step {step}/{total_steps}] Inserting grade data...")
         insert_grade_data()
         logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} Grade data inserted")
+
+        # Step 15: Insert seller data
+        step += 1
+        logger.info(f"[Step {step}/{total_steps}] Inserting seller data...")
+        insert_seller_data()
+        logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} Seller data inserted")
         
-        # Step 14: Download from S3
+        # Step 16: Download from S3
         step += 1
         if PIPELINE_DOWNLOAD_S3:
             logger.info(f"[Step {step}/{total_steps}] Downloading from S3...")

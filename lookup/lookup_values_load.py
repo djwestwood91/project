@@ -224,3 +224,35 @@ def insert_purchase_source_lookup_data():
     except Exception as e:
         logger.error(f"Error inserting purchase source lookup data: {e}")
         raise
+
+def read_landing_table_for_country_lookup():
+    try:
+        # Read the landing table from the database
+        query = f"""SELECT distinct seller_country as country
+                    FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE}
+                    WHERE nullif(seller_country, '') IS NOT NULL
+                    ORDER BY seller_country"""
+        
+        df = pd.read_sql(query, con=ENGINE)
+        logger.info(f"Country lookup data read successfully from {DB_LANDING_TABLE}")
+        return df
+    except Exception as e:
+        logger.error(f"Error reading landing table for country lookup: {e}")
+        raise
+
+def insert_country_lookup_data():
+    try:
+        # Read the landing table data
+        df = read_landing_table_for_country_lookup()
+        if df is not None and not df.empty:
+            # Clean/reload country lookup table
+            truncate_table(DB_MAIN_SCHEMA, DB_COUNTRY_LOOKUP_TABLE, restart_identity=True)
+
+            # Write the DataFrame to the main database table
+            df.to_sql(DB_COUNTRY_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            logger.info("Country lookup data inserted successfully into main database")
+        else:
+            logger.warning("No country lookup data found in landing table")
+    except Exception as e:
+        logger.error(f"Error inserting country lookup data: {e}")
+        raise

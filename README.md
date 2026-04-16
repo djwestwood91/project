@@ -102,8 +102,9 @@ The `main.py` script orchestrates a data-driven pipeline with the following work
    - Grading Companies
    - Grade Descriptions
    - Card Rarity Levels
-   - Currencies (new)
-   - Purchase Sources (new)
+   - Currencies
+   - Purchase Sources
+   - Countries 
 
 7. **Load Card Data**: Inserts normalized card records into the main `pokemon.card` table with source traceability
 
@@ -121,8 +122,8 @@ The `main.py` script orchestrates a data-driven pipeline with the following work
 - If pipeline fails, the exact failing step is reported
 
 ### Optional Features (Currently Disabled)
-- Seller data processing
-- Purchase transaction processing
+- **Seller data processing**: Extract and load seller/vendor information from source data
+- **Purchase transaction processing**: Extract and load purchase details including price, fees, purchase source, and purchase date
 
 ## Usage
 
@@ -192,8 +193,8 @@ The pipeline uses two schemas with **full 3NF normalization**:
 - **card**: Base Pokemon card data (logical cards) - references `card_set`, `language`, `rarity`
 - **card_instance**: Individual physical instances of cards - tracks each unique copy collected
 - **card_grade**: Grading information for card instances - links to `card_instance` and `grade_description`
-- **purchase**: Purchase transaction records - links `card_instance` to `seller`, tracks `currency` and `purchase_source`
-- **seller**: Seller information
+- **seller**: Seller information - stores seller/vendor details including name, website, and country
+- **purchase**: Purchase transaction records - links `card_instance` to `seller`, tracks purchase price, postage fees, total cost, purchase date, and currency
 
 ### Lookup Tables (Dimensions)
 
@@ -236,6 +237,7 @@ DB_CARD_TABLE=card
 DB_CARD_INSTANCE_TABLE=card_instance
 DB_CARD_GRADE_TABLE=card_grade
 DB_SELLER_TABLE=seller
+DB_PURCHASE_TABLE=purchase
 
 # Lookup Tables
 DB_LANGUAGE_LOOKUP_TABLE=language

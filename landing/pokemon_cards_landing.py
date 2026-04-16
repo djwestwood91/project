@@ -3,6 +3,30 @@ from utils.db_utils import truncate_table
 import pandas as pd
 
 def load_pokemon_cards_landing():
+    """
+    Load Pokemon card data from an Excel file into a landing database table.
+    This function reads Pokemon card information from a specified Excel file,
+    transforms the source column names to standardized landing table column names,
+    assigns unique row identifiers, and inserts the data into the 'landing_pokemon_card'
+    database table.
+    The function performs the following steps:
+    1. Reads the Excel file from the configured file path and sheet name
+    2. Maps source column names to standardized landing table column names using a
+        predefined mapping dictionary
+    3. Adds a 'row_id' column with sequential integer values (1 to n) to uniquely
+        identify each record in the landing table
+    4. Appends the transformed data to the 'landing_pokemon_card' table in the
+        landing database schema
+    Returns:
+         None
+    Raises:
+         Exception: If any error occurs during file reading, data transformation,
+                        or database insertion. Errors are logged before re-raising.
+    Side Effects:
+         - Logs info messages about the load process start and completion
+         - Logs error messages if any exception occurs
+         - Inserts data into the database table
+    """
     try:
         logger.info(f"Reading source data from {POKEMON_CARD_FILE_PATH + POKEMON_CARD_FILE_NAME}")
         df = pd.read_excel(POKEMON_CARD_FILE_PATH + POKEMON_CARD_FILE_NAME, sheet_name=POKEMON_CARD_SHEET_NAME)
@@ -39,7 +63,8 @@ def load_pokemon_cards_landing():
                                     'Date Purchased': 'card_date_purchased',
                                     'Source': 'card_source',
                                     'Seller': 'card_seller',
-                                    'Website': 'website'
+                                    'Website': 'website',
+                                    'Seller Country': 'seller_country'
                                 }
 
         # Rename columns in the DataFrame to determine landing table schema

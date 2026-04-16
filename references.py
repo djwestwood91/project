@@ -4,7 +4,6 @@ import logging
 import os
 from dotenv import load_dotenv
 import sys
-import io
 
 load_dotenv()
 
@@ -30,12 +29,18 @@ if os.name == 'nt':
         if isinstance(handler, logging.StreamHandler):
             handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(name)s %(message)s'))
 
+# Status indicators for logging
+STATUS_OK = "[OK]"
+STATUS_FAIL = "[FAIL]"
+
+# Database configuration from environment variables
 DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "postgres")
 
+# Database schemas and tables
 DB_LANDING_SCHEMA = os.getenv("DB_LANDING_SCHEMA", "pokemon_landing")
 DB_MAIN_SCHEMA = os.getenv("DB_MAIN_SCHEMA", "pokemon")
 
@@ -44,16 +49,17 @@ DB_CARD_TABLE = os.getenv("DB_CARD_TABLE", "card")
 DB_CARD_INSTANCE_TABLE = os.getenv("DB_CARD_INSTANCE_TABLE", "card_instance")
 DB_CARD_GRADE_TABLE = os.getenv("DB_CARD_GRADE_TABLE", "card_grade")
 DB_SELLER_TABLE = os.getenv("DB_SELLER_TABLE", "seller")
-DB_CARD_SELLER_TABLE = os.getenv("DB_CARD_SELLER_TABLE", "card_seller")
+DB_PURCHASE_TABLE = os.getenv("DB_PURCHASE_TABLE", "purchase")
 
-# lookup tables
+# lookup (dimensional) tables
 DB_LANGUAGE_LOOKUP_TABLE = os.getenv("DB_LANGUAGE_LOOKUP_TABLE", "")
 DB_SET_LOOKUP_TABLE = os.getenv("DB_SET_LOOKUP_TABLE", "")
 DB_GRADING_COMPANY_LOOKUP_TABLE = os.getenv("DB_GRADING_COMPANY_LOOKUP_TABLE", "")
 DB_GRADE_DESCRIPTION_LOOKUP_TABLE = os.getenv("DB_GRADE_DESCRIPTION_LOOKUP_TABLE", "")
 DB_RARITY_LOOKUP_TABLE = os.getenv("DB_RARITY_LOOKUP_TABLE", "")
-DB_CURRENCY_LOOKUP_TABLE = os.getenv("DB_CURRENCY_LOOKUP_TABLE", "currency")
-DB_PURCHASE_SOURCE_LOOKUP_TABLE = os.getenv("DB_PURCHASE_SOURCE_LOOKUP_TABLE", "purchase_source")
+DB_CURRENCY_LOOKUP_TABLE = os.getenv("DB_CURRENCY_LOOKUP_TABLE", "")
+DB_PURCHASE_SOURCE_LOOKUP_TABLE = os.getenv("DB_PURCHASE_SOURCE_LOOKUP_TABLE", "")
+DB_COUNTRY_LOOKUP_TABLE = os.getenv("DB_COUNTRY_LOOKUP_TABLE", "")
 
 # source file configuration
 POKEMON_CARD_FILE_PATH = os.getenv("FILE_PATH", "")
@@ -73,10 +79,6 @@ PIPELINE_CLEAR_LANDING = os.getenv("PIPELINE_CLEAR_LANDING", "False").lower() ==
 PIPELINE_LIST_S3 = os.getenv("PIPELINE_LIST_S3", "True").lower() == "true"
 PIPELINE_UPLOAD_S3 = os.getenv("PIPELINE_UPLOAD_S3", "True").lower() == "true"
 PIPELINE_DOWNLOAD_S3 = os.getenv("PIPELINE_DOWNLOAD_S3", "False").lower() == "true"
-
-# Status indicators for logging
-STATUS_OK = "[OK]"
-STATUS_FAIL = "[FAIL]"
 
 logger.info(f"Initializing database connection to {DB_NAME}...")
 
