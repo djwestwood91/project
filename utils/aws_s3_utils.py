@@ -24,11 +24,10 @@ def setup_s3_client():
         logger.error(f"Failed to connect to S3 bucket: {error_code}", exc_info=True)
         raise
 
-def list_objects(list_objects_flag):
+def list_s3_objects(list_objects_flag):
     try:
         if not list_objects_flag:
             logger.info("S3 List Objects flag is set to False. Skipping object listing.")
-            pass
         else:
             logger.info("S3 List Objects flag is set to True. Proceeding with object listing.")
         s3_client = setup_s3_client()
@@ -63,15 +62,27 @@ def upload_file_to_s3(upload_flag):
             if s3_client is None:
                 logger.error("Failed to initialize S3 client", exc_info=True)
                 raise
+            
+            # Verify file exists before upload
+            if not os.path.exists(file_ref):
+                raise FileNotFoundError(f"File not found: {file_ref}")
+            
             s3_key = S3_BUCKET_PREFIX + POKEMON_CARD_FILE_NAME
-            s3_client.upload_file(file_ref, S3_BUCKET_NAME, s3_key)
+            
+            # Use put_object with streaming to avoid loading entire file into memory
+            with open(file_ref, 'rb') as file_obj:
+                s3_client.put_object(
+                    Bucket=S3_BUCKET_NAME,
+                    Key=s3_key,
+                    Body=file_obj
+                )
             logger.info(f"Successfully uploaded {file_ref} to s3://{S3_BUCKET_NAME}/{s3_key}")
         
     except ClientError as e:
         logger.error(f"Error uploading file: {str(e)}", exc_info=True)
         raise
-    except FileNotFoundError:
-        logger.error(f"File not found: {file_ref}", exc_info=True)
+    except FileNotFoundError as e:
+        logger.error(f"File not found: {str(e)}", exc_info=True)
         raise
 
 def download_file_from_s3(download_flag):

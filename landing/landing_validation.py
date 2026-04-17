@@ -1,7 +1,11 @@
 from references import *
+from utils.db_utils import validate_identifiers
 
 def run_landing_data_validation():
     try:
+        # Validate database identifiers to prevent SQL injection
+        validate_identifiers(DB_LANDING_SCHEMA, DB_LANDING_TABLE)
+        
         # Perform validation checks on the landing table data
         # Example check: Ensure no null values in critical columns
         query = f"""SELECT COUNT(*) FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE} WHERE card IS NULL OR card_seller IS NULL"""

@@ -1,8 +1,12 @@
 from references import *
+from utils.db_utils import validate_identifiers
 import pandas as pd
 
 def read_landing_table_for_seller_data():
     try:
+        # Validate database identifiers to prevent SQL injection
+        validate_identifiers(DB_LANDING_SCHEMA, DB_LANDING_TABLE)
+        
         # Read the landing table from the database
         query = f"""SELECT distinct on (row_id, trim(lower(card_seller)), trim(lower(website)))
                            row_id,
@@ -22,6 +26,9 @@ def read_landing_table_for_seller_data():
 
 def perform_quality_checks_on_seller_data():
     try:
+        # Validate database identifiers to prevent SQL injection
+        validate_identifiers(DB_MAIN_SCHEMA, DB_SELLER_TABLE)
+        
         # Example quality check: Ensure no null values in critical columns
         query = f"""SELECT COUNT(*) FROM {DB_MAIN_SCHEMA}.{DB_SELLER_TABLE} WHERE seller IS NULL OR country_id IS NULL"""
         result = pd.read_sql(query, con=ENGINE)

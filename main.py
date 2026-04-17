@@ -1,7 +1,7 @@
 from landing.landing_validation import run_landing_data_validation
 from references import *
-from utils.db_utils import *
 from utils.aws_s3_utils import *
+from utils.db_utils import *
 from landing.pokemon_cards_landing import *
 from landing.landing_validation import *
 from lookup.lookup_values_load import (
@@ -75,7 +75,7 @@ def run_poke_pipeline():
         if PIPELINE_LIST_S3:
             logger.info(f"[Step {step}/{total_steps}] Listing S3 objects...")
             try:
-                list_objects(list_objects_flag=True)
+                list_s3_objects(list_objects_flag=True)
                 logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} S3 objects listed")
             except Exception as e:
                 logger.error(f"[Step {step}/{total_steps}] {STATUS_FAIL} Failed to list S3 objects: {str(e)}", exc_info=True)

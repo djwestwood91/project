@@ -1,4 +1,5 @@
 from references import *
+from utils.db_utils import validate_identifiers
 
 def read_landing_table_for_grade_data():
     try:
@@ -28,6 +29,9 @@ def read_landing_table_for_grade_data():
     
 def perform_quality_checks_on_grade_data():
     try:
+        # Validate database identifiers to prevent SQL injection
+        validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_GRADE_TABLE)
+        
         # Example quality check: Ensure no null values in critical columns
         query = f"""SELECT COUNT(*) FROM {DB_MAIN_SCHEMA}.{DB_CARD_GRADE_TABLE} WHERE card_instance_id IS NULL OR grade_description_id IS NULL"""
         result = pd.read_sql(query, con=ENGINE)

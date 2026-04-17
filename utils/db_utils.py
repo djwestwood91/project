@@ -1,12 +1,24 @@
 from references import *
-from sqlalchemy import text
+
+# Helper: validate database identifiers to prevent SQL injection
+def validate_identifiers(*identifiers):
+    """Validate database identifiers (schema/table names) to prevent SQL injection attacks."""
+    try:
+        if not identifiers:
+            raise ValueError("No identifiers provided for validation")
+        for identifier in identifiers:
+            if not identifier or not all(c.isalnum() or c == '_' for c in identifier):
+                raise ValueError(f"Invalid identifier: {identifier}")
+        logger.info(f"Validated {len(identifiers)} identifier(s)")
+    except Exception as e:
+        logger.error(f"Identifier validation error: {str(e)}", exc_info=True)
+        raise
 
 # Helper: truncate a target table (keeps schema, resets identities)
 def truncate_table(schema, table, restart_identity=True, cascade=True):
     try:
         # Validate identifiers to prevent SQL injection
-        if not schema or not table or not all(c.isalnum() or c == '_' for c in schema + table):
-            raise ValueError(f"Invalid schema or table name: {schema}.{table}")
+        validate_identifiers(schema, table)
         
         stmt = f"TRUNCATE TABLE {schema}.{table}"
         if restart_identity:

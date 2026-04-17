@@ -1,7 +1,11 @@
 from references import *
+from utils.db_utils import validate_identifiers
 
 def read_landing_table_for_card_instance_data():
     try:
+        # Validate database identifiers to prevent SQL injection
+        validate_identifiers(DB_LANDING_SCHEMA, DB_LANDING_TABLE, DB_MAIN_SCHEMA, DB_CARD_TABLE)
+        
         # Read the landing table from the database
         query = f"""SELECT lpc.row_id,
                            card_id

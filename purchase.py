@@ -1,7 +1,13 @@
 from references import *
+from utils.db_utils import validate_identifiers
 
 def read_landing_table_for_purchase_data():
     try:
+        # Validate database identifiers to prevent SQL injection
+        validate_identifiers(DB_LANDING_SCHEMA, DB_LANDING_TABLE, DB_MAIN_SCHEMA, 
+                           DB_CARD_TABLE, DB_CARD_INSTANCE_TABLE, DB_CARD_GRADE_TABLE,
+                           DB_SELLER_TABLE, DB_CURRENCY_LOOKUP_TABLE, DB_PURCHASE_SOURCE_LOOKUP_TABLE)
+        
         # Read the landing table and match to card_instance_id - join on row_id for 1:1 mapping
         query = f"""select distinct
                     lpc.row_id,
@@ -32,6 +38,9 @@ def read_landing_table_for_purchase_data():
     
 def perform_quality_checks_on_purchase_data():
     try:
+        # Validate database identifiers to prevent SQL injection
+        validate_identifiers(DB_MAIN_SCHEMA, DB_PURCHASE_TABLE)
+        
         # Example quality check: Ensure no null values in critical columns
         query = f"""SELECT COUNT(*) FROM {DB_MAIN_SCHEMA}.{DB_PURCHASE_TABLE} WHERE card_instance_id IS NULL OR seller_id IS NULL OR purchase_price IS NULL"""
         result = pd.read_sql(query, con=ENGINE)

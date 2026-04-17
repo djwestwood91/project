@@ -1,8 +1,12 @@
 from references import *
-import json
+from utils.db_utils import validate_identifiers
 
 def read_landing_table_for_card_data():
     try:
+        # Validate database identifiers to prevent SQL injection
+        validate_identifiers(DB_LANDING_SCHEMA, DB_LANDING_TABLE, DB_MAIN_SCHEMA, 
+                           DB_SET_LOOKUP_TABLE, DB_LANGUAGE_LOOKUP_TABLE, DB_RARITY_LOOKUP_TABLE)
+        
         # Read the landing table from the database
         query = f"""SELECT distinct on (row_id)
                            row_id,
@@ -34,6 +38,9 @@ def read_landing_table_for_card_data():
     
 def perform_quality_checks_on_card_data():
     try:
+        # Validate database identifiers to prevent SQL injection
+        validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_TABLE)
+        
         # Example quality check: Ensure no null values in critical columns
         query = f"""SELECT COUNT(*) FROM {DB_MAIN_SCHEMA}.{DB_CARD_TABLE} WHERE card IS NULL OR card_set_id IS NULL"""
         result = pd.read_sql(query, con=ENGINE)
