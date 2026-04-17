@@ -29,7 +29,7 @@ project/
 ├── purchase.py                      # Purchase transaction processing logic
 ├── utils/
 │   ├── aws_s3_utils.py              # AWS S3 client and operations
-│   └── db_utils.py                  # Database utilities (model creation, table clearing)
+│   └── db_utils.py                  # Database utilities (model creation, table clearing, identifier validation)
 ├── landing/
 │   ├── pokemon_cards_landing.py     # Landing layer data processing
 │   └── landing_validation.py        # Landing table data quality validation
@@ -299,18 +299,21 @@ Log level is set to INFO by default.
 
 The `aws_s3_utils.py` module provides:
 
-- `setup_s3_client()`: Initialize AWS S3 client
-- `list_objects()`: List files in S3 bucket
-- `upload_file_to_s3()`: Upload local file to S3
-- `download_file_from_s3()`: Download file from S3
+- `setup_s3_client()`: Initialize AWS S3 client with credential validation
+- `list_s3_objects()`: List files in S3 bucket with prefix support
+- `upload_file_to_s3()`: Upload local file to S3 using streaming (optimized for large files, avoids memory issues)
+- `download_file_from_s3()`: Download file from S3 to local storage
+
+**S3 Upload Optimization**: Uses streaming `put_object()` instead of loading entire files into memory, resolving seekable stream errors and improving performance for larger files.
 
 ## Error Handling
 
 The pipeline includes comprehensive error handling:
-- Database connection errors
-- File not found errors
-- AWS S3 operation errors
-- All errors are logged and re-raised for visibility
+- Database connection errors with connection state verification
+- File not found errors with path validation
+- AWS S3 operation errors (ClientError, UnseekableStreamError, etc.)
+- SQL injection prevention through identifier validation
+- All errors are logged with full context and re-raised for visibility
 
 ## Development Notes
 
