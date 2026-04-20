@@ -1,5 +1,6 @@
 from references import *
 from utils.db_utils import validate_identifiers
+import os
 
 def convert_timezone_aware_datetimes(df):
     """
@@ -12,140 +13,122 @@ def convert_timezone_aware_datetimes(df):
             df[col] = df[col].dt.tz_localize(None)
     return df
 
-def output_card_data_to_excel_for_tableau():
-    try:
-        # Validate database identifiers to prevent SQL injection
-        validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_INSTANCE_TABLE)
-        
-        # Read the card instance data from the main database table
-        query = f"""SELECT card_id,
-                           row_id, 
-                           card, 
-                           card_set_id, 
-                           card_holo_flag, 
-                           card_first_edition_flag, 
-                           card_promo_flag, 
-                           card_language_id, 
-                           card_rarity_id, 
-                           extra_details, 
-                           card_image_reference
-                    FROM {DB_MAIN_SCHEMA}.{DB_CARD_TABLE}"""
-        df = pd.read_sql(query, con=ENGINE)
-        logger.info(f"{DB_CARD_TABLE} data read successfully for Excel output")
-        
-        # Convert timezone-aware datetimes to timezone-naive for Excel compatibility
-        df = convert_timezone_aware_datetimes(df)
-        
-        # Output the DataFrame to an Excel file
-        df.to_excel(POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME, index=False, sheet_name=DB_CARD_TABLE)
-        logger.info(f"Card data successfully written to {POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME}")
-    except Exception as e:
-        logger.error(f"Error outputting card data to Excel: {str(e)}", exc_info=True)
-        raise
+def read_card_data():
+    """Read card data from the database"""
+    validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_TABLE)
+    query = f"""SELECT card_id,
+                       row_id, 
+                       card, 
+                       card_set_id, 
+                       card_holo_flag, 
+                       card_first_edition_flag, 
+                       card_promo_flag, 
+                       card_language_id, 
+                       card_rarity_id, 
+                       extra_details, 
+                       card_image_reference
+                FROM {DB_MAIN_SCHEMA}.{DB_CARD_TABLE}"""
+    df = pd.read_sql(query, con=ENGINE)
+    return df
 
-def output_card_instance_data_to_excel_for_tableau():
-    try:
-        # Validate database identifiers to prevent SQL injection
-        validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_INSTANCE_TABLE)
-        
-        # Read the card instance data from the main database table
-        query = f"""SELECT card_instance_id,
-                           row_id, 
-                           card_id
-                    FROM {DB_MAIN_SCHEMA}.{DB_CARD_INSTANCE_TABLE}"""
-        df = pd.read_sql(query, con=ENGINE)
-        logger.info(f"{DB_CARD_INSTANCE_TABLE} data read successfully for Excel output")
-        
-        # Convert timezone-aware datetimes to timezone-naive for Excel compatibility
-        df = convert_timezone_aware_datetimes(df)
-        
-        # Output the DataFrame to an Excel file
-        df.to_excel(POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME, index=False, sheet_name=DB_CARD_INSTANCE_TABLE)
-        logger.info(f"Card instance data successfully written to {POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME}")
-    except Exception as e:
-        logger.error(f"Error outputting card instance data to Excel: {str(e)}", exc_info=True)
-        raise
+def read_card_instance_data():
+    """Read card instance data from the database"""
+    validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_INSTANCE_TABLE)
+    query = f"""SELECT card_instance_id,
+                       row_id, 
+                       card_id
+                FROM {DB_MAIN_SCHEMA}.{DB_CARD_INSTANCE_TABLE}"""
+    df = pd.read_sql(query, con=ENGINE)
+    return df
 
-def output_card_grade_data_to_excel_for_tableau():
-    try:
-        # Validate database identifiers to prevent SQL injection
-        validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_GRADE_TABLE)
-        
-        # Read the card grade data from the main database table
-        query = f"""SELECT grade_id,
-                           card_instance_id, 
-                           row_id, 
-                           grade_description_id, 
-                           grading_certification_number, 
-                           graded_card_url
-                    FROM {DB_MAIN_SCHEMA}.{DB_CARD_GRADE_TABLE}"""
-        query = f"""SELECT * FROM {DB_MAIN_SCHEMA}.{DB_CARD_GRADE_TABLE}"""
-        df = pd.read_sql(query, con=ENGINE)
-        logger.info(f"{DB_CARD_GRADE_TABLE} data read successfully for Excel output")
-        
-        # Convert timezone-aware datetimes to timezone-naive for Excel compatibility
-        df = convert_timezone_aware_datetimes(df)
-        
-        
-        # Output the DataFrame to an Excel file
-        df.to_excel(POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME, index=False, sheet_name=DB_CARD_GRADE_TABLE)
-        logger.info(f"Card grade data successfully written to {POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME}")
-    except Exception as e:
-        logger.error(f"Error outputting card grade data to Excel: {str(e)}", exc_info=True)
-        raise
+def read_card_grade_data():
+    """Read card grade data from the database"""
+    validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_GRADE_TABLE)
+    query = f"""SELECT grade_id,
+                       card_instance_id, 
+                       row_id, 
+                       grade_description_id, 
+                       grading_certification_number, 
+                       graded_card_url
+                FROM {DB_MAIN_SCHEMA}.{DB_CARD_GRADE_TABLE}"""
+    df = pd.read_sql(query, con=ENGINE)
+    return df
 
-def output_seller_data_to_excel_for_tableau():
-    try:
-        # Validate database identifiers to prevent SQL injection
-        validate_identifiers(DB_MAIN_SCHEMA, DB_SELLER_TABLE)
-                   
-        # Read the seller data from the main database table
-        query = f"""SELECT seller_id,
-                           row_id, 
-                           seller, 
-                           website, 
-                           country_id
-                    FROM {DB_MAIN_SCHEMA}.{DB_SELLER_TABLE}"""
-        df = pd.read_sql(query, con=ENGINE)
-        logger.info(f"{DB_SELLER_TABLE} data read successfully for Excel output")
-        
-        # Convert timezone-aware datetimes to timezone-naive for Excel compatibility
-        df = convert_timezone_aware_datetimes(df)
-        
-        # Output the DataFrame to an Excel file
-        df.to_excel(POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME, index=False, sheet_name=DB_SELLER_TABLE)
-        logger.info(f"Seller data successfully written to {POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME}")
-    except Exception as e:
-        logger.error(f"Error outputting seller data to Excel: {str(e)}", exc_info=True)
-        raise
+def read_seller_data():
+    """Read seller data from the database"""
+    validate_identifiers(DB_MAIN_SCHEMA, DB_SELLER_TABLE)
+    query = f"""SELECT seller_id,
+                       row_id, 
+                       seller, 
+                       website, 
+                       country_id
+                FROM {DB_MAIN_SCHEMA}.{DB_SELLER_TABLE}"""
+    df = pd.read_sql(query, con=ENGINE)
+    return df
 
-def output_purchase_data_to_excel_for_tableau():
+def read_purchase_data():
+    """Read purchase data from the database"""
+    validate_identifiers(DB_MAIN_SCHEMA, DB_PURCHASE_TABLE)
+    query = f"""SELECT purchase_id,
+                       row_id, 
+                       card_instance_id, 
+                       grade_id, 
+                       seller_id, 
+                       purchase_price, 
+                       postage_fees, 
+                       total_price, 
+                       currency_id, 
+                       purchase_source_id, 
+                       date_purchased
+                FROM {DB_MAIN_SCHEMA}.{DB_PURCHASE_TABLE}"""
+    df = pd.read_sql(query, con=ENGINE)
+    return df
+
+def output_all_data_to_excel_for_tableau():
+    # Write all tables to a single Excel file with multiple sheets
     try:
-        # Validate database identifiers to prevent SQL injection
-        validate_identifiers(DB_MAIN_SCHEMA, DB_PURCHASE_TABLE)
+        file_path = POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME
         
-        # Read the purchase data from the main database table
-        query = f"""SELECT purchase_id,
-                           row_id, 
-                           card_instance_id, 
-                           grade_id, 
-                           seller_id, 
-                           purchase_price, 
-                           postage_fees, 
-                           total_price, 
-                           currency_id, 
-                           purchase_source_id, 
-                           date_purchased
-                    FROM {DB_MAIN_SCHEMA}.{DB_PURCHASE_TABLE}"""
-        df = pd.read_sql(query, con=ENGINE)
-        logger.info(f"{DB_PURCHASE_TABLE} data read successfully for Excel output")
+        # Create the output directory if it doesn't exist
+        os.makedirs(POKEMON_CARD_OUTPUT_FILE_PATH, exist_ok=True)
         
-        # Convert timezone-aware datetimes to timezone-naive for Excel compatibility
-        df = convert_timezone_aware_datetimes(df)
+        with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+            # Card data
+            logger.info(f"Reading {DB_CARD_TABLE} data...")
+            card_df = read_card_data()
+            card_df = convert_timezone_aware_datetimes(card_df)
+            card_df.to_excel(writer, sheet_name=DB_CARD_TABLE, index=False)
+            logger.info(f"{DB_CARD_TABLE} data written to Excel")
+            
+            # Card Instance data
+            logger.info(f"Reading {DB_CARD_INSTANCE_TABLE} data...")
+            card_instance_df = read_card_instance_data()
+            card_instance_df = convert_timezone_aware_datetimes(card_instance_df)
+            card_instance_df.to_excel(writer, sheet_name=DB_CARD_INSTANCE_TABLE, index=False)
+            logger.info(f"{DB_CARD_INSTANCE_TABLE} data written to Excel")
+            
+            # Card Grade data
+            logger.info(f"Reading {DB_CARD_GRADE_TABLE} data...")
+            card_grade_df = read_card_grade_data()
+            card_grade_df = convert_timezone_aware_datetimes(card_grade_df)
+            card_grade_df.to_excel(writer, sheet_name=DB_CARD_GRADE_TABLE, index=False)
+            logger.info(f"{DB_CARD_GRADE_TABLE} data written to Excel")
+            
+            # Seller data
+            logger.info(f"Reading {DB_SELLER_TABLE} data...")
+            seller_df = read_seller_data()
+            seller_df = convert_timezone_aware_datetimes(seller_df)
+            seller_df.to_excel(writer, sheet_name=DB_SELLER_TABLE, index=False)
+            logger.info(f"{DB_SELLER_TABLE} data written to Excel")
+            
+            # Purchase data
+            logger.info(f"Reading {DB_PURCHASE_TABLE} data...")
+            purchase_df = read_purchase_data()
+            purchase_df = convert_timezone_aware_datetimes(purchase_df)
+            purchase_df.to_excel(writer, sheet_name=DB_PURCHASE_TABLE, index=False)
+            logger.info(f"{DB_PURCHASE_TABLE} data written to Excel")
         
-        # Output the DataFrame to an Excel file
-        df.to_excel(POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME, index=False, sheet_name=DB_PURCHASE_TABLE)
-        logger.info(f"Purchase data successfully written to {POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME}")
+        logger.info(f"All data successfully written to {file_path}")
     except Exception as e:
-        logger.error(f"Error outputting purchase data to Excel: {str(e)}", exc_info=True)
+        logger.error(f"Error outputting data to Excel: {str(e)}", exc_info=True)
         raise

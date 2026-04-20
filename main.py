@@ -20,11 +20,7 @@ from grade import *
 from seller import *
 from purchase import *
 from excel_data_output import (
-    output_card_data_to_excel_for_tableau,
-    output_card_instance_data_to_excel_for_tableau,
-    output_card_grade_data_to_excel_for_tableau,
-    output_seller_data_to_excel_for_tableau,
-    output_purchase_data_to_excel_for_tableau
+    output_all_data_to_excel_for_tableau
 )
 
 def run_db_utils():
@@ -75,7 +71,7 @@ def run_poke_pipeline():
         logger.info("=" * 60)
         
         step = 0
-        total_steps = 24
+        total_steps = 20  # Update this if you add/remove steps
         
         # Step 1: List S3 objects
         step += 1
@@ -169,22 +165,13 @@ def run_poke_pipeline():
         else:
             logger.info(f"[Step {step}/{total_steps}] Skipping S3 download (PIPELINE_DOWNLOAD_S3=False)")
 
-        # Step 18-23: Output Excel files
-        lookup_tables = [
-            (f"[Step {step+1}/{total_steps}]", "Card Excel Output", output_card_data_to_excel_for_tableau),
-            (f"[Step {step+2}/{total_steps}]", "Card Instance Excel Output", output_card_instance_data_to_excel_for_tableau),
-            (f"[Step {step+3}/{total_steps}]", "Card Grade Excel Output", output_card_grade_data_to_excel_for_tableau),
-            (f"[Step {step+4}/{total_steps}]", "Seller Excel Output", output_seller_data_to_excel_for_tableau),
-            (f"[Step {step+5}/{total_steps}]", "Purchase Excel Output", output_purchase_data_to_excel_for_tableau)
-        ]
-        
-        for step_label, sheet_name, output_excel_func in lookup_tables:
-            logger.info(f"{step_label} Loading {sheet_name} lookup...")
-            output_excel_func()
-            logger.info(f"{step_label} {STATUS_OK} {sheet_name} output to excel complete")
-            step += 1
+        # Step 18 Output Excel file
+        step += 1
+        logger.info(f"[Step {step}/{total_steps}] Outputting Excel file...")
+        output_all_data_to_excel_for_tableau()
+        logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} Excel file output complete")
 
-        # Step 24: Upload Excel output to S3
+        # Step 19: Upload Excel output to S3
         step += 1
         if PIPELINE_UPLOAD_S3:
             logger.info(f"[Step {step}/{total_steps}] Uploading Excel output to S3...")
