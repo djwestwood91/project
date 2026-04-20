@@ -27,6 +27,7 @@ project/
 ├── grade.py                         # Grade data processing logic
 ├── seller.py                        # Seller data processing logic
 ├── purchase.py                      # Purchase transaction processing logic
+├── excel_data_output.py             # Excel export to Tableau with multiple sheets
 ├── utils/
 │   ├── aws_s3_utils.py              # AWS S3 client and operations
 │   └── db_utils.py                  # Database utilities (model creation, table clearing, identifier validation)
@@ -125,11 +126,17 @@ The `main.py` script orchestrates a data-driven pipeline with the following work
 
 12. **Load Purchase Data**: Inserts purchase transaction records linking card instances to sellers with pricing and source information
 
-13. **Download from S3**: Optionally downloads processed files from S3 for archive/verification
+14. **Export to Excel**: Writes all processed data tables to a single Excel file with 13 sheets for Tableau and BI tool integration
+    - 5 fact table sheets: card, card_instance, card_grade, seller, purchase
+    - 8 dimensional table sheets: card_set, language, rarity, grading_company, grade_description, currency, purchase_source, country
+    - Automatically handles timezone-aware datetime conversion for Excel compatibility
+    - Applies column autosizing to all sheets for optimal readability
+
+15. **Download from S3**: Optionally downloads processed files from S3 for archive/verification
     - Controlled by `PIPELINE_DOWNLOAD_S3` environment variable (default: False)
 
 ### Pipeline Logging
-- Each step is numbered and tracked (e.g., "[Step 1/18]")
+- Each step is numbered and tracked (e.g., "[Step 1/23]")
 - Status indicators: `[OK]` for success, `[FAIL]` for errors
 - All operations logged to both console and `db.log`
 - If pipeline fails, the exact failing step is reported
@@ -160,6 +167,7 @@ This will run both `run_db_utils()` and `run_poke_pipeline()` functions sequenti
 - Executes the full data processing workflow
 - Includes S3 operations, landing load, lookup population, card/instance/grade insertion
 - Loads seller and purchase transaction data
+- Exports all processed data to Excel with multiple sheets
 - Logs all operations to console and `db.log`
 
 ### Controlling Pipeline Behavior
@@ -254,7 +262,6 @@ DB_CARD_GRADE_TABLE=card_grade
 DB_SELLER_TABLE=seller
 DB_PURCHASE_TABLE=purchase
 
-
 # Lookup Tables
 DB_LANGUAGE_LOOKUP_TABLE=language
 DB_SET_LOOKUP_TABLE=card_set
@@ -306,6 +313,66 @@ The `aws_s3_utils.py` module provides:
 
 **S3 Upload Optimization**: Uses streaming `put_object()` instead of loading entire files into memory, resolving seekable stream errors and improving performance for larger files.
 
+## Excel Output for Tableau
+
+The pipeline exports processed data to a single Excel file with multiple sheets for easy integration with Tableau and other BI tools. The export includes both fact tables and all dimensional/lookup tables for complete data context.
+
+### Excel Output Structure
+
+All data is written to a single file (`pokemon_cards_processed.xlsx`) with 13 separate sheets:
+
+**Fact Tables (5 sheets):**
+- **card**: Base card data with set, language, and rarity information
+- **card_instance**: Individual card instances with card references
+- **card_grade**: Grading information with certification numbers and URLs
+- **seller**: Seller/vendor information including website and country
+- **purchase**: Purchase transactions linking instances to sellers with pricing
+
+**Dimensional Tables (8 sheets):**
+- **card_set**: Pokemon set reference data
+- **language**: Language reference data for cards
+- **rarity**: Card rarity classifications
+- **grading_company**: Grading company reference data
+- **grade_description**: Grade descriptions with company references
+- **currency**: Currency codes for purchase transactions
+- **purchase_source**: Purchase source reference data
+- **country**: Country reference data for sellers and shipping
+
+### Timezone-Aware DateTime Handling
+
+The pipeline automatically converts timezone-aware datetime columns to timezone-naive format before exporting to Excel. This ensures compatibility with Excel's datetime format, which does not support timezone information.
+
+**Key Features:**
+- `convert_timezone_aware_datetimes()`: Strips timezone info while preserving local time values
+- Uses pandas `is_datetime64tz_dtype()` for precise timezone-aware column detection
+- Applied automatically during Excel export
+- Column autosizing applied to all sheets for optimal readability
+
+### Excel Output Functions
+
+**Main Function:**
+- `output_all_data_to_excel_for_tableau()`: Orchestrates the export of all 13 tables (5 fact + 8 dimensional) to a single Excel file with multiple sheets
+
+**Fact Table Read Functions:**
+- `read_card_data()`: Retrieves card table with explicit column selection
+- `read_card_instance_data()`: Retrieves card instance data
+- `read_card_grade_data()`: Retrieves grading information
+- `read_seller_data()`: Retrieves seller/vendor information
+- `read_purchase_data()`: Retrieves purchase transaction records
+
+**Dimensional Table Read Functions:**
+- `read_card_set_lookup()`: Retrieves card set lookup data
+- `read_language_lookup()`: Retrieves language lookup data
+- `read_rarity_lookup()`: Retrieves rarity lookup data
+- `read_grading_company_lookup()`: Retrieves grading company lookup data
+- `read_grade_description_lookup()`: Retrieves grade description lookup data
+- `read_currency_lookup()`: Retrieves currency lookup data
+- `read_purchase_source_lookup()`: Retrieves purchase source lookup data
+- `read_country_lookup()`: Retrieves country lookup data
+
+**Legacy Compatibility:**
+Original five output functions (`output_card_data_to_excel_for_tableau()`, `output_card_instance_data_to_excel_for_tableau()`, etc.) now call the consolidated function, ensuring backward compatibility with existing code.
+
 ## Error Handling
 
 The pipeline includes comprehensive error handling:
@@ -324,4 +391,4 @@ The pipeline includes comprehensive error handling:
 
 ## License
 
-Private project
+Private project for learning purposes
