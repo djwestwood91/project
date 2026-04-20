@@ -19,6 +19,13 @@ from card_instance import *
 from grade import *
 from seller import *
 from purchase import *
+from excel_data_output import (
+    output_card_data_to_excel_for_tableau,
+    output_card_instance_data_to_excel_for_tableau,
+    output_card_grade_data_to_excel_for_tableau,
+    output_seller_data_to_excel_for_tableau,
+    output_purchase_data_to_excel_for_tableau
+)
 
 def run_db_utils():
     try:
@@ -68,7 +75,7 @@ def run_poke_pipeline():
         logger.info("=" * 60)
         
         step = 0
-        total_steps = 18
+        total_steps = 24
         
         # Step 1: List S3 objects
         step += 1
@@ -87,7 +94,8 @@ def run_poke_pipeline():
         step += 1
         if PIPELINE_UPLOAD_S3:
             logger.info(f"[Step {step}/{total_steps}] Uploading file to S3...")
-            upload_file_to_s3(upload_flag=True)
+            # updload initial file for processing to S3
+            upload_file_to_s3(upload_flag=True, file_path_reference=POKEMON_CARD_FILE_PATH + POKEMON_CARD_FILE_NAME)
             logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} File uploaded to S3")
         else:
             logger.info(f"[Step {step}/{total_steps}] Skipping S3 upload (PIPELINE_UPLOAD_S3=False)")
@@ -160,6 +168,30 @@ def run_poke_pipeline():
             logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} File downloaded from S3")
         else:
             logger.info(f"[Step {step}/{total_steps}] Skipping S3 download (PIPELINE_DOWNLOAD_S3=False)")
+
+        # Step 18-23: Output Excel files
+        lookup_tables = [
+            (f"[Step {step+1}/{total_steps}]", "Card Excel Output", output_card_data_to_excel_for_tableau),
+            (f"[Step {step+2}/{total_steps}]", "Card Instance Excel Output", output_card_instance_data_to_excel_for_tableau),
+            (f"[Step {step+3}/{total_steps}]", "Card Grade Excel Output", output_card_grade_data_to_excel_for_tableau),
+            (f"[Step {step+4}/{total_steps}]", "Seller Excel Output", output_seller_data_to_excel_for_tableau),
+            (f"[Step {step+5}/{total_steps}]", "Purchase Excel Output", output_purchase_data_to_excel_for_tableau)
+        ]
+        
+        for step_label, sheet_name, output_excel_func in lookup_tables:
+            logger.info(f"{step_label} Loading {sheet_name} lookup...")
+            output_excel_func()
+            logger.info(f"{step_label} {STATUS_OK} {sheet_name} output to excel complete")
+            step += 1
+
+        # Step 24: Upload Excel output to S3
+        step += 1
+        if PIPELINE_UPLOAD_S3:
+            logger.info(f"[Step {step}/{total_steps}] Uploading Excel output to S3...")
+            upload_file_to_s3(upload_flag=True, file_path_reference=POKEMON_CARD_OUTPUT_FILE_PATH + POKEMON_CARD_OUTPUT_FILE_NAME)
+            logger.info(f"[Step {step}/{total_steps}] {STATUS_OK} Excel output uploaded to S3")
+        else:
+            logger.info(f"[Step {step}/{total_steps}] Skipping Excel output upload to S3 (PIPELINE_UPLOAD_S3=False)")
         
         logger.info("=" * 60)
         logger.info("PIPELINE COMPLETED SUCCESSFULLY")

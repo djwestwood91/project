@@ -83,7 +83,7 @@ PIPELINE_CREATE_MODEL = os.getenv("PIPELINE_CREATE_MODEL", "True").lower() == "t
 PIPELINE_CLEAR_LANDING = os.getenv("PIPELINE_CLEAR_LANDING", "False").lower() == "true"
 PIPELINE_LIST_S3 = os.getenv("PIPELINE_LIST_S3", "True").lower() == "true"
 PIPELINE_UPLOAD_S3 = os.getenv("PIPELINE_UPLOAD_S3", "True").lower() == "true"
-PIPELINE_DOWNLOAD_S3 = os.getenv("PIPELINE_DOWNLOAD_S3", "False").lower() == "true"
+PIPELINE_DOWNLOAD_S3 = os.getenv("PIPELINE_DOWNLOAD_S3", "True").lower() == "true"
 
 # AWS Configuration
 AWS_REGION = os.getenv("AWS_REGION")

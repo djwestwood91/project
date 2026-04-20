@@ -49,7 +49,7 @@ def list_s3_objects(list_objects_flag):
         logger.error(f"Error listing objects: {str(e)}", exc_info=True)
         raise
 
-def upload_file_to_s3(upload_flag):
+def upload_file_to_s3(upload_flag, file_path_reference):
     try:
         if not upload_flag:
             logger.info("S3 Upload flag is set to False. Skipping file upload.")
@@ -57,7 +57,7 @@ def upload_file_to_s3(upload_flag):
         else:
             logger.info("S3 Upload flag is set to True. Proceeding with file upload.")
             # use s3_key as the path in the s3 bucket like a directory structure if needed
-            file_ref = POKEMON_CARD_FILE_PATH + POKEMON_CARD_FILE_NAME
+            file_ref = file_path_reference
             s3_client = setup_s3_client()
             if s3_client is None:
                 logger.error("Failed to initialize S3 client", exc_info=True)
@@ -67,7 +67,7 @@ def upload_file_to_s3(upload_flag):
             if not os.path.exists(file_ref):
                 raise FileNotFoundError(f"File not found: {file_ref}")
             
-            s3_key = S3_BUCKET_PREFIX + POKEMON_CARD_FILE_NAME
+            s3_key = S3_BUCKET_PREFIX + file_ref
             
             # Use put_object with streaming to avoid loading entire file into memory
             with open(file_ref, 'rb') as file_obj:
