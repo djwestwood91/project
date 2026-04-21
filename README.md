@@ -208,9 +208,23 @@ PIPELINE_DOWNLOAD_S3=False
 The pipeline uses two schemas with **full 3NF normalization**:
 
 - **pokemon_landing**: Intermediate schema for raw data ingestion
-- **pokemon**: Main schema for processed data storage
+- **pokemon**: Main schema for processed data storage with **Snowflake Schema** design
 
-### Core Tables
+### Schema Type: Snowflake Schema
+
+This implementation uses a **Snowflake Schema** (normalized star schema) rather than a pure star schema. The key characteristic is the presence of **hierarchical relationships between dimension tables**:
+
+- **Hierarchical Dimension**: `grade_description` contains a foreign key reference to `grading_company`, creating a normalized dimension hierarchy
+- **Multiple Fact Tables**: Multiple interconnected fact tables (`card`, `card_instance`, `card_grade`, `purchase`) that reference both dimensions and other facts
+- **Normalized Dimensions**: Dimensions maintain referential integrity and avoid redundant data storage
+
+**Benefits of Snowflake Schema:**
+- Maintains data integrity through normalized relationships
+- Reduces data redundancy (e.g., `grading_company` data is stored once and referenced)
+- Provides good balance between query performance and storage efficiency
+- Suitable for transactional systems with frequent updates
+
+### Core Tables (Facts)
 
 - **card**: Base Pokemon card data (logical cards) - references `card_set`, `language`, `rarity`
 - **card_instance**: Individual physical instances of cards - tracks each unique copy collected
@@ -220,14 +234,17 @@ The pipeline uses two schemas with **full 3NF normalization**:
 
 ### Lookup Tables (Dimensions)
 
+**Independent Dimensions:**
 - **card_set**: Pokemon set lookup
 - **language**: Card language lookup
 - **rarity**: Card rarity lookup
-- **grading_company**: Grading company lookup
-- **grade_description**: Grade descriptions - references `grading_company`
 - **currency**: Currency codes for purchases
 - **purchase_source**: Purchase source lookup
 - **country**: Country lookup
+
+**Hierarchical Dimensions:**
+- **grading_company**: Grading company lookup (parent dimension)
+- **grade_description**: Grade descriptions - references `grading_company` (child dimension)
 
 ### Data Lineage
 
