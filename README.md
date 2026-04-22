@@ -1,6 +1,6 @@
-# Pokemon Card Data Processing Pipeline
+# My Pokemon Card Data Processing Pipeline
 
-A Python-based ETL pipeline for processing Pokemon trading card data, with AWS S3 integration for file storage and PostgreSQL for data persistence.This project was created to improve my base knowledge of existing technologies.
+A Python-based ETL pipeline for processing my personal Pokemon trading card data, with AWS S3 integration for file storage and PostgreSQL for data persistence. This project was created to improve my base knowledge of existing technologies and experiment in new areas.
 
 ## Overview
 
