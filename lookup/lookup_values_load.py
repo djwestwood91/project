@@ -22,10 +22,10 @@ def insert_language_lookup_data():
         df = read_landing_table_for_card_language_lookup()
         if df is not None:
             # Clean/reload lookup table
-            truncate_table(DB_MAIN_SCHEMA, DB_LANGUAGE_LOOKUP_TABLE, restart_identity=True)
+            truncate_table(DB_DIMENSIONS_SCHEMA, DB_LANGUAGE_LOOKUP_TABLE, restart_identity=True)
 
             # Write the DataFrame to the main database table
-            df.to_sql(DB_LANGUAGE_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            df.to_sql(DB_LANGUAGE_LOOKUP_TABLE, con=ENGINE, schema=DB_DIMENSIONS_SCHEMA, if_exists='append', index=False)
             logger.info("Pokemon card language lookup data inserted successfully into main database")
     except Exception as e:
         logger.error(f"Error inserting pokemon card language lookup data: {str(e)}", exc_info=True)
@@ -54,10 +54,10 @@ def insert_set_lookup_data():
         df = read_landing_table_for_card_set_lookup()
         if df is not None:
             # Clean/reload lookup table
-            truncate_table(DB_MAIN_SCHEMA, DB_SET_LOOKUP_TABLE, restart_identity=True)
+            truncate_table(DB_DIMENSIONS_SCHEMA, DB_SET_LOOKUP_TABLE, restart_identity=True)
 
             # Write the DataFrame to the main database table
-            df.to_sql(DB_SET_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            df.to_sql(DB_SET_LOOKUP_TABLE, con=ENGINE, schema=DB_DIMENSIONS_SCHEMA, if_exists='append', index=False)
             logger.info("Pokemon card set lookup data inserted successfully into main database")
     except Exception as e:
         logger.error(f"Error inserting pokemon card set lookup data: {str(e)}", exc_info=True)
@@ -84,10 +84,10 @@ def insert_grading_company_lookup_data():
         df = read_landing_table_for_grading_company_lookup()
         if df is not None:
             # Clean/reload lookup table
-            truncate_table(DB_MAIN_SCHEMA, DB_GRADING_COMPANY_LOOKUP_TABLE, restart_identity=True)
+            truncate_table(DB_DIMENSIONS_SCHEMA, DB_GRADING_COMPANY_LOOKUP_TABLE, restart_identity=True)
 
             # Write the DataFrame to the main database table
-            df.to_sql(DB_GRADING_COMPANY_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            df.to_sql(DB_GRADING_COMPANY_LOOKUP_TABLE, con=ENGINE, schema=DB_DIMENSIONS_SCHEMA, if_exists='append', index=False)
             logger.info("Pokemon card grading company lookup data inserted successfully into main database")
     except Exception as e:
         logger.error(f"Error inserting pokemon card grading company lookup data: {str(e)}", exc_info=True)
@@ -100,7 +100,7 @@ def read_landing_table_for_grading_description_lookup():
                            lpc.grade,
                            lpc.grade_description
                     FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE} lpc
-                    JOIN {DB_MAIN_SCHEMA}.{DB_GRADING_COMPANY_LOOKUP_TABLE} gc ON lpc.grading_company = gc.company
+                    JOIN {DB_DIMENSIONS_SCHEMA}.{DB_GRADING_COMPANY_LOOKUP_TABLE} gc ON lpc.grading_company = gc.company
                     WHERE nullif(lpc.grade_description, '') IS NOT NULL"""
         
         df = pd.read_sql(query, con=ENGINE)
@@ -116,10 +116,10 @@ def insert_grade_description_lookup_data():
         df = read_landing_table_for_grading_description_lookup()
         if df is not None:
             # Clean/reload lookup table
-            truncate_table(DB_MAIN_SCHEMA, DB_GRADE_DESCRIPTION_LOOKUP_TABLE, restart_identity=True)
+            truncate_table(DB_DIMENSIONS_SCHEMA, DB_GRADE_DESCRIPTION_LOOKUP_TABLE, restart_identity=True)
 
             # Write the DataFrame to the main database table
-            df.to_sql(DB_GRADE_DESCRIPTION_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            df.to_sql(DB_GRADE_DESCRIPTION_LOOKUP_TABLE, con=ENGINE, schema=DB_DIMENSIONS_SCHEMA, if_exists='append', index=False)
             logger.info("Pokemon card grading description lookup data inserted successfully into main database")
     except Exception as e:
         logger.error(f"Error inserting pokemon card grading description lookup data: {str(e)}", exc_info=True)
@@ -145,10 +145,10 @@ def insert_rarity_lookup_data():
         df = read_landing_table_for_rarity_lookup()
         if df is not None:
             # Clean/reload lookup table
-            truncate_table(DB_MAIN_SCHEMA, DB_RARITY_LOOKUP_TABLE, restart_identity=True)
+            truncate_table(DB_DIMENSIONS_SCHEMA, DB_RARITY_LOOKUP_TABLE, restart_identity=True)
 
             # Write the DataFrame to the main database table
-            df.to_sql(DB_RARITY_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            df.to_sql(DB_RARITY_LOOKUP_TABLE, con=ENGINE, schema=DB_DIMENSIONS_SCHEMA, if_exists='append', index=False)
             logger.info("Pokemon card rarity lookup data inserted successfully into main database")
     except Exception as e:
         logger.error(f"Error inserting pokemon card rarity lookup data: {str(e)}", exc_info=True)
@@ -176,10 +176,10 @@ def insert_currency_lookup_data():
         df = read_landing_table_for_currency_lookup()
         if df is not None and not df.empty:
             # Clean/reload lookup table
-            truncate_table(DB_MAIN_SCHEMA, DB_CURRENCY_LOOKUP_TABLE, restart_identity=True)
+            truncate_table(DB_DIMENSIONS_SCHEMA, DB_CURRENCY_LOOKUP_TABLE, restart_identity=True)
 
             # Write the DataFrame to the main database table
-            df.to_sql(DB_CURRENCY_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            df.to_sql(DB_CURRENCY_LOOKUP_TABLE, con=ENGINE, schema=DB_DIMENSIONS_SCHEMA, if_exists='append', index=False)
             logger.info("Currency lookup data inserted successfully into main database")
         else:
             logger.warning("No currency data found in landing table")
@@ -209,10 +209,10 @@ def insert_purchase_source_lookup_data():
         df = read_landing_table_for_purchase_source_lookup()
         if df is not None and not df.empty:
             # Clean/reload lookup table
-            truncate_table(DB_MAIN_SCHEMA, DB_PURCHASE_SOURCE_LOOKUP_TABLE, restart_identity=True)
+            truncate_table(DB_DIMENSIONS_SCHEMA, DB_PURCHASE_SOURCE_LOOKUP_TABLE, restart_identity=True)
 
             # Write the DataFrame to the main database table
-            df.to_sql(DB_PURCHASE_SOURCE_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            df.to_sql(DB_PURCHASE_SOURCE_LOOKUP_TABLE, con=ENGINE, schema=DB_DIMENSIONS_SCHEMA, if_exists='append', index=False)
             logger.info("Purchase source lookup data inserted successfully into main database")
         else:
             logger.warning("No purchase source data found in landing table")
@@ -241,10 +241,10 @@ def insert_country_lookup_data():
         df = read_landing_table_for_country_lookup()
         if df is not None and not df.empty:
             # Clean/reload country lookup table
-            truncate_table(DB_MAIN_SCHEMA, DB_COUNTRY_LOOKUP_TABLE, restart_identity=True)
+            truncate_table(DB_DIMENSIONS_SCHEMA, DB_COUNTRY_LOOKUP_TABLE, restart_identity=True)
 
             # Write the DataFrame to the main database table
-            df.to_sql(DB_COUNTRY_LOOKUP_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            df.to_sql(DB_COUNTRY_LOOKUP_TABLE, con=ENGINE, schema=DB_DIMENSIONS_SCHEMA, if_exists='append', index=False)
             logger.info("Country lookup data inserted successfully into main database")
         else:
             logger.warning("No country lookup data found in landing table")

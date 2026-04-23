@@ -1,12 +1,9 @@
 from references import *
-from utils.db_utils import validate_identifiers
+
+# Validate database identifiers to prevent SQL injection
 
 def read_landing_table_for_card_data():
-    try:
-        # Validate database identifiers to prevent SQL injection
-        validate_identifiers(DB_LANDING_SCHEMA, DB_LANDING_TABLE, DB_MAIN_SCHEMA, 
-                           DB_SET_LOOKUP_TABLE, DB_LANGUAGE_LOOKUP_TABLE, DB_RARITY_LOOKUP_TABLE)
-        
+    try:    
         # Read the landing table from the database
         query = f"""SELECT distinct on (row_id)
                            row_id,
@@ -24,9 +21,9 @@ def read_landing_table_for_card_data():
                            ) as extra_details,
                            image_reference as card_image_reference
                     FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE} lpc
-                    JOIN {DB_MAIN_SCHEMA}.{DB_SET_LOOKUP_TABLE} cs ON lpc.card_set = cs.name
-                    JOIN {DB_MAIN_SCHEMA}.{DB_LANGUAGE_LOOKUP_TABLE} cl ON lpc.card_language = cl.name
-                    JOIN {DB_MAIN_SCHEMA}.{DB_RARITY_LOOKUP_TABLE} cr ON lpc.card_rarity = cr.rarity
+                    JOIN {DB_DIMENSIONS_SCHEMA}.{DB_SET_LOOKUP_TABLE} cs ON lpc.card_set = cs.name
+                    JOIN {DB_DIMENSIONS_SCHEMA}.{DB_LANGUAGE_LOOKUP_TABLE} cl ON lpc.card_language = cl.name
+                    JOIN {DB_DIMENSIONS_SCHEMA}.{DB_RARITY_LOOKUP_TABLE} cr ON lpc.card_rarity = cr.rarity
                     WHERE nullif(card, '') IS NOT NULL
                     ORDER BY row_id;"""
         df = pd.read_sql(query, con=ENGINE)
@@ -37,12 +34,9 @@ def read_landing_table_for_card_data():
         raise
     
 def perform_quality_checks_on_card_data():
-    try:
-        # Validate database identifiers to prevent SQL injection
-        validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_TABLE)
-        
+    try:        
         # Example quality check: Ensure no null values in critical columns
-        query = f"""SELECT COUNT(*) FROM {DB_MAIN_SCHEMA}.{DB_CARD_TABLE} WHERE card IS NULL OR card_set_id IS NULL"""
+        query = f"""SELECT COUNT(*) FROM {DB_FACTS_SCHEMA}.{DB_CARD_TABLE} WHERE card IS NULL OR card_set_id IS NULL"""
         result = pd.read_sql(query, con=ENGINE)
         # if the count of records with null values in critical columns is greater than 0, log a warning, otherwise log that the quality check passed
         if result.iloc[0, 0] > 0:
@@ -61,7 +55,7 @@ def insert_card_data():
             # Write the DataFrame to the main database table
             # Convert the extra_details column to JSON string format before inserting into the database
             df['extra_details'] = df['extra_details'].apply(lambda x: json.dumps(x) if isinstance(x, dict) else x)
-            df.to_sql(DB_CARD_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            df.to_sql(DB_CARD_TABLE, con=ENGINE, schema=DB_FACTS_SCHEMA, if_exists='append', index=False)
             logger.info(f"{DB_CARD_TABLE} data inserted successfully into main database")
             perform_quality_checks_on_card_data()
     except Exception as e:

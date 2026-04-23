@@ -1,13 +1,7 @@
 from references import *
-from utils.db_utils import validate_identifiers
 
 def read_landing_table_for_purchase_data():
     try:
-        # Validate database identifiers to prevent SQL injection
-        validate_identifiers(DB_LANDING_SCHEMA, DB_LANDING_TABLE, DB_MAIN_SCHEMA, 
-                           DB_CARD_TABLE, DB_CARD_INSTANCE_TABLE, DB_CARD_GRADE_TABLE,
-                           DB_SELLER_TABLE, DB_CURRENCY_LOOKUP_TABLE, DB_PURCHASE_SOURCE_LOOKUP_TABLE)
-        
         # Read the landing table and match to card_instance_id - join on row_id for 1:1 mapping
         query = f"""select distinct
                     lpc.row_id,
@@ -21,14 +15,14 @@ def read_landing_table_for_purchase_data():
                     ps.purchase_source_id,
                     lpc.card_date_purchased as date_purchased
                 FROM {DB_LANDING_SCHEMA}.{DB_LANDING_TABLE} lpc
-                JOIN {DB_MAIN_SCHEMA}.{DB_CARD_TABLE} c ON c.card = lpc.card
+                JOIN {DB_FACTS_SCHEMA}.{DB_CARD_TABLE} c ON c.card = lpc.card
                 AND c.row_id = lpc.row_id
-                JOIN {DB_MAIN_SCHEMA}.{DB_CARD_INSTANCE_TABLE} ci ON ci.card_id = c.card_id
-                LEFT JOIN {DB_MAIN_SCHEMA}.{DB_CARD_GRADE_TABLE} cg ON cg.card_instance_id = ci.card_instance_id
-                JOIN {DB_MAIN_SCHEMA}.{DB_SELLER_TABLE} s ON s.seller = lpc.card_seller 
+                JOIN {DB_FACTS_SCHEMA}.{DB_CARD_INSTANCE_TABLE} ci ON ci.card_id = c.card_id
+                LEFT JOIN {DB_FACTS_SCHEMA}.{DB_CARD_GRADE_TABLE} cg ON cg.card_instance_id = ci.card_instance_id
+                JOIN {DB_FACTS_SCHEMA}.{DB_SELLER_TABLE} s ON s.seller = lpc.card_seller 
                 AND s.row_id = lpc.row_id
-                LEFT JOIN {DB_MAIN_SCHEMA}.{DB_CURRENCY_LOOKUP_TABLE} cur ON cur.currency_code = lpc.card_currency
-                LEFT JOIN {DB_MAIN_SCHEMA}.{DB_PURCHASE_SOURCE_LOOKUP_TABLE} ps ON ps."source" = lpc.card_source;"""
+                LEFT JOIN {DB_DIMENSIONS_SCHEMA}.{DB_CURRENCY_LOOKUP_TABLE} cur ON cur.currency_code = lpc.card_currency
+                LEFT JOIN {DB_DIMENSIONS_SCHEMA}.{DB_PURCHASE_SOURCE_LOOKUP_TABLE} ps ON ps."source" = lpc.card_source;"""
         df = pd.read_sql(query, con=ENGINE)
         logger.info(f"{DB_LANDING_TABLE} table read successfully for purchase data")
         return df
@@ -38,11 +32,8 @@ def read_landing_table_for_purchase_data():
     
 def perform_quality_checks_on_purchase_data():
     try:
-        # Validate database identifiers to prevent SQL injection
-        validate_identifiers(DB_MAIN_SCHEMA, DB_PURCHASE_TABLE)
-        
         # Example quality check: Ensure no null values in critical columns
-        query = f"""SELECT COUNT(*) FROM {DB_MAIN_SCHEMA}.{DB_PURCHASE_TABLE} WHERE card_instance_id IS NULL OR seller_id IS NULL OR purchase_price IS NULL"""
+        query = f"""SELECT COUNT(*) FROM {DB_FACTS_SCHEMA}.{DB_PURCHASE_TABLE} WHERE card_instance_id IS NULL OR seller_id IS NULL OR purchase_price IS NULL"""
         result = pd.read_sql(query, con=ENGINE)
         # if the count of records with null values in critical columns is greater than 0, log a warning, otherwise log that the quality check passed
         if result.iloc[0, 0] > 0:
@@ -59,7 +50,7 @@ def insert_purchase_data():
         df = read_landing_table_for_purchase_data()
         if df is not None:
             # Write the DataFrame to the main database table
-            df.to_sql(DB_PURCHASE_TABLE, con=ENGINE, schema=DB_MAIN_SCHEMA, if_exists='append', index=False)
+            df.to_sql(DB_PURCHASE_TABLE, con=ENGINE, schema=DB_FACTS_SCHEMA, if_exists='append', index=False)
             logger.info(f"{DB_PURCHASE_TABLE} data inserted successfully into main database")
             perform_quality_checks_on_purchase_data()
     except Exception as e:

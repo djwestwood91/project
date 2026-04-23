@@ -1,18 +1,5 @@
 from references import *
-
-# Helper: validate database identifiers to prevent SQL injection
-def validate_identifiers(*identifiers):
-    """Validate database identifiers (schema/table names) to prevent SQL injection attacks."""
-    try:
-        if not identifiers:
-            raise ValueError("No identifiers provided for validation")
-        for identifier in identifiers:
-            if not identifier or not all(c.isalnum() or c == '_' for c in identifier):
-                raise ValueError(f"Invalid identifier: {identifier}")
-        logger.info(f"Validated {len(identifiers)} identifier(s)")
-    except Exception as e:
-        logger.error(f"Identifier validation error: {str(e)}", exc_info=True)
-        raise
+from utils.validators import validate_identifiers
 
 # Helper: truncate a target table (keeps schema, resets identities)
 def truncate_table(schema, table, restart_identity=True, cascade=True):

@@ -1,5 +1,4 @@
 from references import *
-from utils.db_utils import validate_identifiers
 import os
 from openpyxl.utils import get_column_letter
 
@@ -16,7 +15,6 @@ def convert_timezone_aware_datetimes(df):
 
 def read_card_data():
     """Read card data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_TABLE)
     query = f"""SELECT card_id,
                        row_id, 
                        card, 
@@ -28,48 +26,44 @@ def read_card_data():
                        card_rarity_id, 
                        extra_details, 
                        card_image_reference
-                FROM {DB_MAIN_SCHEMA}.{DB_CARD_TABLE}"""
+                FROM {DB_FACTS_SCHEMA}.{DB_CARD_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_card_instance_data():
     """Read card instance data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_INSTANCE_TABLE)
     query = f"""SELECT card_instance_id,
                        row_id, 
                        card_id
-                FROM {DB_MAIN_SCHEMA}.{DB_CARD_INSTANCE_TABLE}"""
+                FROM {DB_FACTS_SCHEMA}.{DB_CARD_INSTANCE_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_card_grade_data():
     """Read card grade data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_CARD_GRADE_TABLE)
     query = f"""SELECT grade_id,
                        card_instance_id, 
                        row_id, 
                        grade_description_id, 
                        grading_certification_number, 
                        graded_card_url
-                FROM {DB_MAIN_SCHEMA}.{DB_CARD_GRADE_TABLE}"""
+                FROM {DB_FACTS_SCHEMA}.{DB_CARD_GRADE_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_seller_data():
     """Read seller data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_SELLER_TABLE)
     query = f"""SELECT seller_id,
                        row_id, 
                        seller, 
                        website, 
                        country_id
-                FROM {DB_MAIN_SCHEMA}.{DB_SELLER_TABLE}"""
+                FROM {DB_FACTS_SCHEMA}.{DB_SELLER_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_purchase_data():
     """Read purchase data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_PURCHASE_TABLE)
     query = f"""SELECT purchase_id,
                        row_id, 
                        card_instance_id, 
@@ -81,83 +75,75 @@ def read_purchase_data():
                        currency_id, 
                        purchase_source_id, 
                        date_purchased
-                FROM {DB_MAIN_SCHEMA}.{DB_PURCHASE_TABLE}"""
+                FROM {DB_FACTS_SCHEMA}.{DB_PURCHASE_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_card_set_lookup():
     """Read card set lookup data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_SET_LOOKUP_TABLE)
     query = f"""SELECT card_set_id,
                        "name",
                        year 
-                FROM {DB_MAIN_SCHEMA}.{DB_SET_LOOKUP_TABLE}"""
+                FROM {DB_DIMENSIONS_SCHEMA}.{DB_SET_LOOKUP_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_language_lookup():
     """Read language lookup data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_LANGUAGE_LOOKUP_TABLE)
     query = f"""SELECT language_id,
                        "name"
-                FROM {DB_MAIN_SCHEMA}.{DB_LANGUAGE_LOOKUP_TABLE}"""
+                FROM {DB_DIMENSIONS_SCHEMA}.{DB_LANGUAGE_LOOKUP_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_rarity_lookup():
     """Read rarity lookup data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_RARITY_LOOKUP_TABLE)
     query = f"""SELECT rarity_id,
                        rarity
-                FROM {DB_MAIN_SCHEMA}.{DB_RARITY_LOOKUP_TABLE}"""
+                FROM {DB_DIMENSIONS_SCHEMA}.{DB_RARITY_LOOKUP_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_grading_company_lookup():
     """Read grading company lookup data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_GRADING_COMPANY_LOOKUP_TABLE)
     query = f"""SELECT grading_company_id,
                        company,
                        company_full_name
-    FROM {DB_MAIN_SCHEMA}.{DB_GRADING_COMPANY_LOOKUP_TABLE}"""
+    FROM {DB_DIMENSIONS_SCHEMA}.{DB_GRADING_COMPANY_LOOKUP_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_grade_description_lookup():
     """Read grade description lookup data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_GRADE_DESCRIPTION_LOOKUP_TABLE)
     query = f"""SELECT grade_description_id,
                        grading_company_id,
                        grade,
                        grade_description
-                FROM {DB_MAIN_SCHEMA}.{DB_GRADE_DESCRIPTION_LOOKUP_TABLE}"""
+                FROM {DB_DIMENSIONS_SCHEMA}.{DB_GRADE_DESCRIPTION_LOOKUP_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_currency_lookup():
     """Read currency lookup data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_CURRENCY_LOOKUP_TABLE)
     query = f"""SELECT currency_id,
                        currency_code
-                FROM {DB_MAIN_SCHEMA}.{DB_CURRENCY_LOOKUP_TABLE}"""
+                FROM {DB_DIMENSIONS_SCHEMA}.{DB_CURRENCY_LOOKUP_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_purchase_source_lookup():
     """Read purchase source lookup data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_PURCHASE_SOURCE_LOOKUP_TABLE)
     query = f"""SELECT purchase_source_id,
                        source                
-                FROM {DB_MAIN_SCHEMA}.{DB_PURCHASE_SOURCE_LOOKUP_TABLE}"""
+                FROM {DB_DIMENSIONS_SCHEMA}.{DB_PURCHASE_SOURCE_LOOKUP_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 
 def read_country_lookup():
     """Read country lookup data from the database"""
-    validate_identifiers(DB_MAIN_SCHEMA, DB_COUNTRY_LOOKUP_TABLE)
     query = f"""SELECT country_id,
                        country
-                FROM {DB_MAIN_SCHEMA}.{DB_COUNTRY_LOOKUP_TABLE}"""
+                FROM {DB_DIMENSIONS_SCHEMA}.{DB_COUNTRY_LOOKUP_TABLE}"""
     df = pd.read_sql(query, con=ENGINE)
     return df
 

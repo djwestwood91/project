@@ -62,6 +62,7 @@ def run_db_utils():
         raise
 
 def run_poke_pipeline():
+    step = 0  # Define step before try block to avoid UnboundLocalError in exception handler
     try:
         # Run database utilities first
         run_db_utils()
@@ -70,7 +71,6 @@ def run_poke_pipeline():
         logger.info("POKEMON CARD DATA PROCESSING PIPELINE")
         logger.info("=" * 60)
         
-        step = 0
         total_steps = 20  # Update this if you add/remove steps
         
         # Step 1: List S3 objects

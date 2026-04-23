@@ -402,7 +402,7 @@ The pipeline includes comprehensive error handling:
 ## Development Notes
 
 - Update the `S3_BUCKET_PREFIX` environment variable to organize files in S3
-- Ensure the database schemas and tables exist before running the pipeline
+- Ensure the database schemas and tables exist before running the pipeline (or ensure PIPELINE_CREATE_MODEL=True)
 - Verify AWS credentials have appropriate S3 permissions
 - Check file paths in `.env` match your local file structure
 

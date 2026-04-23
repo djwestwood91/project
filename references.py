@@ -9,6 +9,7 @@ import pandas as pd
 import boto3
 from botocore.exceptions import ClientError
 import json
+from utils.validators import validate_identifier, validate_identifiers
 
 load_dotenv()
 
@@ -46,25 +47,33 @@ DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "postgres")
 
 # Database schemas and tables
-DB_LANDING_SCHEMA = os.getenv("DB_LANDING_SCHEMA", "pokemon_landing")
-DB_MAIN_SCHEMA = os.getenv("DB_MAIN_SCHEMA", "pokemon")
+DB_LANDING_SCHEMA = validate_identifier("DB_LANDING_SCHEMA", os.getenv("DB_LANDING_SCHEMA", "pokemon_landing"))
+DB_DIMENSIONS_SCHEMA = validate_identifier("DB_DIMENSIONS_SCHEMA", os.getenv("DB_DIMENSIONS_SCHEMA", "pokemon_dimensions"))
+DB_FACTS_SCHEMA = validate_identifier("DB_FACTS_SCHEMA", os.getenv("DB_FACTS_SCHEMA", "pokemon_facts"))
+DB_API_SCHEMA = validate_identifier("DB_API_SCHEMA", os.getenv("DB_API_SCHEMA", "pokemon_api"))
+DB_MAIN_SCHEMA = validate_identifier("DB_MAIN_SCHEMA", os.getenv("DB_MAIN_SCHEMA", "pokemon_facts"))  # Default to facts for backward compatibility
 
-DB_LANDING_TABLE = os.getenv("DB_LANDING_TABLE", "landing_pokemon_card")
-DB_CARD_TABLE = os.getenv("DB_CARD_TABLE", "card")
-DB_CARD_INSTANCE_TABLE = os.getenv("DB_CARD_INSTANCE_TABLE", "card_instance")
-DB_CARD_GRADE_TABLE = os.getenv("DB_CARD_GRADE_TABLE", "card_grade")
-DB_SELLER_TABLE = os.getenv("DB_SELLER_TABLE", "seller")
-DB_PURCHASE_TABLE = os.getenv("DB_PURCHASE_TABLE", "purchase")
+DB_LANDING_TABLE = validate_identifier("DB_LANDING_TABLE", os.getenv("DB_LANDING_TABLE", "landing_pokemon_card"))
 
-# lookup (dimensional) tables
-DB_LANGUAGE_LOOKUP_TABLE = os.getenv("DB_LANGUAGE_LOOKUP_TABLE", "")
-DB_SET_LOOKUP_TABLE = os.getenv("DB_SET_LOOKUP_TABLE", "")
-DB_GRADING_COMPANY_LOOKUP_TABLE = os.getenv("DB_GRADING_COMPANY_LOOKUP_TABLE", "")
-DB_GRADE_DESCRIPTION_LOOKUP_TABLE = os.getenv("DB_GRADE_DESCRIPTION_LOOKUP_TABLE", "")
-DB_RARITY_LOOKUP_TABLE = os.getenv("DB_RARITY_LOOKUP_TABLE", "")
-DB_CURRENCY_LOOKUP_TABLE = os.getenv("DB_CURRENCY_LOOKUP_TABLE", "")
-DB_PURCHASE_SOURCE_LOOKUP_TABLE = os.getenv("DB_PURCHASE_SOURCE_LOOKUP_TABLE", "")
-DB_COUNTRY_LOOKUP_TABLE = os.getenv("DB_COUNTRY_LOOKUP_TABLE", "")
+# Fact tables
+DB_CARD_TABLE = validate_identifier("DB_CARD_TABLE", os.getenv("DB_CARD_TABLE", "card"))
+DB_CARD_INSTANCE_TABLE = validate_identifier("DB_CARD_INSTANCE_TABLE", os.getenv("DB_CARD_INSTANCE_TABLE", "card_instance"))
+DB_CARD_GRADE_TABLE = validate_identifier("DB_CARD_GRADE_TABLE", os.getenv("DB_CARD_GRADE_TABLE", "card_grade"))
+DB_SELLER_TABLE = validate_identifier("DB_SELLER_TABLE", os.getenv("DB_SELLER_TABLE", "seller"))
+DB_PURCHASE_TABLE = validate_identifier("DB_PURCHASE_TABLE", os.getenv("DB_PURCHASE_TABLE", "purchase"))
+
+# Dimension (lookup) tables
+DB_LANGUAGE_LOOKUP_TABLE = validate_identifier("DB_LANGUAGE_LOOKUP_TABLE", os.getenv("DB_LANGUAGE_LOOKUP_TABLE", "language"))
+DB_SET_LOOKUP_TABLE = validate_identifier("DB_SET_LOOKUP_TABLE", os.getenv("DB_SET_LOOKUP_TABLE", "card_set"))
+DB_GRADING_COMPANY_LOOKUP_TABLE = validate_identifier("DB_GRADING_COMPANY_LOOKUP_TABLE", os.getenv("DB_GRADING_COMPANY_LOOKUP_TABLE", "grading_company"))
+DB_GRADE_DESCRIPTION_LOOKUP_TABLE = validate_identifier("DB_GRADE_DESCRIPTION_LOOKUP_TABLE", os.getenv("DB_GRADE_DESCRIPTION_LOOKUP_TABLE", "grade_description"))
+DB_RARITY_LOOKUP_TABLE = validate_identifier("DB_RARITY_LOOKUP_TABLE", os.getenv("DB_RARITY_LOOKUP_TABLE", "rarity"))
+DB_CURRENCY_LOOKUP_TABLE = validate_identifier("DB_CURRENCY_LOOKUP_TABLE", os.getenv("DB_CURRENCY_LOOKUP_TABLE", "currency"))
+DB_PURCHASE_SOURCE_LOOKUP_TABLE = validate_identifier("DB_PURCHASE_SOURCE_LOOKUP_TABLE", os.getenv("DB_PURCHASE_SOURCE_LOOKUP_TABLE", "purchase_source"))
+DB_COUNTRY_LOOKUP_TABLE = validate_identifier("DB_COUNTRY_LOOKUP_TABLE", os.getenv("DB_COUNTRY_LOOKUP_TABLE", "country"))
+
+# API reference tables
+DB_API_TGCDEX_CARD_TABLE = validate_identifier("DB_API_TGCDEX_CARD_TABLE", os.getenv("DB_API_TGCDEX_CARD_TABLE", "tcgdex_card_reference"))   
 
 # source file configuration
 POKEMON_CARD_FILE_PATH = os.getenv("FILE_PATH", "")
@@ -84,6 +93,10 @@ PIPELINE_CLEAR_LANDING = os.getenv("PIPELINE_CLEAR_LANDING", "False").lower() ==
 PIPELINE_LIST_S3 = os.getenv("PIPELINE_LIST_S3", "True").lower() == "true"
 PIPELINE_UPLOAD_S3 = os.getenv("PIPELINE_UPLOAD_S3", "True").lower() == "true"
 PIPELINE_DOWNLOAD_S3 = os.getenv("PIPELINE_DOWNLOAD_S3", "True").lower() == "true"
+
+# Default image quality and file type - appended to filename when downloading from TCGdex
+DEFAULT_IMAGE_QUALITY = os.getenv("DEFAULT_IMAGE_QUALITY", "high")
+DEFAULT_IMAGE_FILE_TYPE = os.getenv("DEFAULT_IMAGE_FILE_TYPE", "jpg")
 
 # AWS Configuration
 AWS_REGION = os.getenv("AWS_REGION")
