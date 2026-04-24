@@ -15,6 +15,7 @@ This project automates the ingestion, transformation, and storage of Pokemon car
 - **Grade Processing**: Handle card grading information with lineage tracking
 - **Seller Processing**: Extract and load seller/vendor information
 - **Purchase Processing**: Track purchase transactions with pricing and source data
+- **TCGdex API Integration**: Fetch and store external card reference data from TCGdex API with multi-language support
 
 ## Project Structure
 
@@ -27,6 +28,7 @@ project/
 ├── grade.py                         # Grade data processing logic
 ├── seller.py                        # Seller data processing logic
 ├── purchase.py                      # Purchase transaction processing logic
+├── card_api_refs.py                 # TCGdex API integration and external card reference data
 ├── excel_data_output.py             # Excel export to Tableau with multiple sheets
 ├── utils/
 │   ├── aws_s3_utils.py              # AWS S3 client and operations
@@ -38,6 +40,8 @@ project/
 │   └── lookup_values_load.py        # Lookup table population
 ├── model_references/
 │   └── model.sql                    # Database schema definitions
+├── airflow/
+│   └── airflow_dag.py               # Airflow DAG orchestration for pipeline scheduling
 └── files/                           # Local data files directory
     ├── processed_data/              # Output directory for processed files
     └── source_data/                 # Input directory for source files
@@ -205,10 +209,12 @@ PIPELINE_DOWNLOAD_S3=False
 
 ## Database Schema
 
-The pipeline uses two schemas with **full 3NF normalization**:
+The pipeline uses multiple schemas with **full 3NF normalization**:
 
 - **pokemon_landing**: Intermediate schema for raw data ingestion
-- **pokemon**: Main schema for processed data storage with **Snowflake Schema** design
+- **pokemon_dimensions**: Dimension/lookup tables for processed data storage
+- **pokemon_facts**: Fact tables and main processed data storage with **Snowflake Schema** design
+- **pokemon_api**: API reference tables for external data sources (TCGdex, etc.)
 
 ### Schema Type: Snowflake Schema
 
@@ -269,7 +275,10 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=postgres
 DB_LANDING_SCHEMA=pokemon_landing
-DB_MAIN_SCHEMA=pokemon
+DB_DIMENSIONS_SCHEMA=pokemon_dimensions
+DB_FACTS_SCHEMA=pokemon_facts
+DB_API_SCHEMA=pokemon_api
+DB_MAIN_SCHEMA=pokemon_facts          # Default to facts for backward compatibility
 
 # Database Tables
 DB_LANDING_TABLE=landing_pokemon_card
@@ -289,12 +298,16 @@ DB_CURRENCY_LOOKUP_TABLE=currency
 DB_PURCHASE_SOURCE_LOOKUP_TABLE=purchase_source
 DB_COUNTRY_LOOKUP_TABLE=country
 
+# API Reference Tables
+DB_API_TGCDEX_CARD_TABLE=tcgdex_card_reference
+
 # File Paths
 FILE_PATH=files/source_data/
 FILE_NAME=pokemon.xlsx
 FILE_SHEET_NAME=Pokemon Cards
 OUTPUT_FILE_PATH=files/processed_data/
 OUTPUT_FILE_NAME=pokemon_cards_processed.xlsx
+DB_MODEL_FILE_PATH=model_references/model.sql
 
 # S3 Configuration
 AWS_REGION=eu-west-2
@@ -302,6 +315,10 @@ AWS_ACCESS_KEY_ID=your_access_key
 AWS_SECRET_ACCESS_KEY=your_secret_key
 S3_BUCKET_NAME=pokemon-app-demo-bucket
 S3_BUCKET_PREFIX=pokemon_data/
+
+# TCGdex API Configuration
+DEFAULT_IMAGE_QUALITY=high
+DEFAULT_IMAGE_FILE_TYPE=jpg
 
 # Pipeline Control Flags
 PIPELINE_CREATE_MODEL=True
@@ -318,6 +335,101 @@ The pipeline logs output to:
 - File: `db.log`
 
 Log level is set to INFO by default.
+
+## Pipeline Orchestration with Airflow
+
+The project includes Apache Airflow support for production scheduling and orchestration. The Airflow DAG (`airflow/airflow_dag.py`) automatically runs the complete pipeline on a daily schedule.
+
+### Airflow DAG Configuration
+
+- **DAG ID**: `pokemon_card_processing_pipeline`
+- **Schedule**: Daily at 02:00 UTC (`0 2 * * *`)
+- **Start Date**: April 21, 2026
+- **Owner**: data-team
+- **Retries**: 1 attempt if pipeline fails
+- **Retry Delay**: 5 minutes
+- **Max Active Runs**: 1 (prevents concurrent executions)
+- **Tags**: pokemon, etl, data-processing
+
+### Running with Airflow
+
+```bash
+# Start Airflow scheduler (runs DAGs on schedule)
+airflow scheduler
+
+# Start Airflow webserver (access at http://localhost:8080)
+airflow webserver
+
+# Manually trigger DAG execution
+airflow dags trigger pokemon_card_processing_pipeline
+```
+
+The DAG handles environment variable configuration automatically by reading from the `.env` file when the pipeline task executes.
+
+## TCGdex API Integration
+
+The `card_api_refs.py` module provides integration with the TCGdex API for fetching external Pokemon card reference data. This feature allows enrichment of the local card database with authoritative information from TCGdex.
+
+### TCGdex Functions
+
+**`run_card_api_checks()`**
+- Main orchestration function that queries cards from the database and enriches them with TCGdex data
+- Supports multi-language queries (English, Japanese, German)
+- Handles API rate limiting with configurable delays
+- Writes all matched results to the `tcgdex_card_reference` table
+
+**`check_source_card_price()`**
+- Queries cards with purchase prices from the database
+- Returns comprehensive card data including set, language, rarity, grade, and currency
+- Handles NULL values gracefully for optional fields
+
+**`write_tcgdex_card_to_db(card_data, row, tcgdex_id)`**
+- Writes individual TCGdex card records to the database
+- Uses UPSERT pattern (INSERT ON CONFLICT) to handle duplicate entries
+- Stores card images with configurable quality and format
+- Automatically timestamps records with `created_at` and `updated_at` fields
+
+### TCGdex Configuration
+
+The following environment variables control TCGdex API integration:
+
+```bash
+# TCGdex API Image Configuration
+DEFAULT_IMAGE_QUALITY=high          # Image quality: "high" or "low" (default: "high")
+DEFAULT_IMAGE_FILE_TYPE=jpg         # Image file type: "jpg" or "png" (default: "jpg")
+
+# Database Configuration for API References
+DB_API_SCHEMA=pokemon_api           # Schema for API reference tables
+DB_API_TGCDEX_CARD_TABLE=tcgdex_card_reference  # Table for TCGdex card data
+```
+
+### TCGdex Reference Table
+
+The `tcgdex_card_reference` table stores enriched card data from TCGdex:
+
+- **card_id**: Reference to the card in `pokemon_facts.card` table
+- **language_id**: Reference to the language in `pokemon_dimensions.language` table
+- **tcgdex_id**: Unique TCGdex identifier for the card
+- **tcgdex_localid**: TCGdex local ID (language-specific)
+- **tcgdex_name**: Card name from TCGdex
+- **tcgdex_image**: URL to card image (with quality and format based on configuration)
+- **created_at**: Timestamp when record was first created
+- **updated_at**: Timestamp when record was last updated
+
+### Using TCGdex Integration
+
+To run TCGdex API enrichment:
+
+```bash
+python card_api_refs.py
+```
+
+This will:
+1. Query cards with prices from the database
+2. Map language strings to TCGdex language codes
+3. For each card, query TCGdex API with appropriate language settings
+4. Write matched results to the database
+5. Implement rate limiting to avoid API throttling
 
 ## AWS S3 Functions
 
