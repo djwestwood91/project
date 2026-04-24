@@ -278,6 +278,23 @@ python app.py
   - Returns: `tcgdex_detail.html` template with API reference records
   - Queries `pokemon_api.tcgdex_card_reference` table
 
+**Error Handlers** (NEW)
+
+- `@app.errorhandler(404)` - Handles page not found errors
+  - Renders `error.html` with code 404 and "Page not found" message
+
+- `@app.errorhandler(500)` - Handles server errors
+  - Logs error details to `db.log`
+  - Renders `error.html` with code 500 and "Internal server error" message
+
+All route exceptions are caught with try-except blocks and render the error page with appropriate status codes and messages.
+
+**Static Files**
+
+- Flask is configured with `static_folder='files'` and `static_url_path='/files'`
+- Static assets (images, logos) are served from the `/files/` directory
+- Bruce logo (`bruce_logo.png`) is displayed on all pages, right-aligned and level with the page heading
+
 **Technology Stack**
 - **Framework**: Flask (Python web framework)
 - **Database Interface**: SQLAlchemy with pandas for query execution
@@ -291,18 +308,28 @@ python app.py
 - Displays paginated card collection (25 cards per page by default)
 - Responsive table with sortable column headers
 - Pagination controls with page number links
-- Links to card detail and TCGdex detail pages
+- Links to card detail and TCGDex detail pages
+- Features Bruce logo (right-aligned) and emoji-enhanced heading
 
 **card_detail.html**
 - Single card detail view with all associated information
 - Organized display of purchase, grading, and seller data
 - Back link to main collection
+- Features Bruce logo (right-aligned) and emoji-enhanced heading
 
 **tcgdex_detail.html**
 - TCGdex API reference data display
 - Card image gallery with links to full images
 - Multi-language support for cards available in multiple languages
 - Interactive column sorting
+- Features Bruce logo (right-aligned) and emoji-enhanced heading
+
+**error.html** (NEW)
+- Generic error page for HTTP errors (404, 500, etc.)
+- Displays error code and context-specific messages
+- Includes navigation links ("Back to Home", "Go Back")
+- Styled to match the rest of the application with Bruce logo and consistent design
+- Renders when page not found (404) or server errors (500) occur
 
 ## Database Schema
 

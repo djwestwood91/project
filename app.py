@@ -1,7 +1,18 @@
 from references import *
 from flask import Flask, render_template, request
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='files', static_url_path='/files')
+
+# Error handlers
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('error.html', code=404, message="Page not found"), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    logger.error(f"Internal Server Error: {str(error)}", exc_info=True)
+    return render_template('error.html', code=500, message="Internal server error"), 500
 
 # Route to display all cards with pagination
 @app.route('/')
@@ -9,7 +20,7 @@ def index():
     try:
         # Pagination settings
         page = request.args.get('page', 1, type=int)
-        per_page = 25  # Cards per page
+        per_page = PAGE_SIZE  # Cards per page
         offset = (page - 1) * per_page
         
         # Get total count
@@ -46,7 +57,7 @@ def index():
                              total_cards=total_cards)
     except Exception as e:
         logger.error(f"Error fetching cards: {str(e)}", exc_info=True)
-        return f"Error: {str(e)}", 500
+        return render_template('error.html', code=500, message=f"Error: {str(e)}"), 500
 
 # Route to display single card details
 @app.route('/card/<int:card_id>')
@@ -84,20 +95,20 @@ def card_detail(card_id):
         
         df = pd.read_sql(query, con=ENGINE, params={'card_id': card_id})
         if df.empty:
-            return "Card not found", 404
+            return render_template('error.html', code=404, message="Card not found"), 404
         
         card = df.to_dict('records')[0]
         return render_template('card_detail.html', card=card)
     except Exception as e:
         logger.error(f"Error fetching card: {str(e)}", exc_info=True)
-        return f"Error: {str(e)}", 500
+        return render_template('error.html', code=500, message=f"Error: {str(e)}"), 500
     
 @app.route('/tcgdex_detail/<card_name>')
 def tcgdex_detail(card_name):
     try:
         # Pagination settings
         page = request.args.get('page', 1, type=int)
-        per_page = 25  # Cards per page
+        per_page = PAGE_SIZE  # Cards per page
         offset = (page - 1) * per_page
         
         # Get total count
@@ -125,7 +136,7 @@ def tcgdex_detail(card_name):
                     """)
         df = pd.read_sql(query, con=ENGINE, params={'card_name': card_name})
         if df.empty:
-            return "Card not found", 404
+            return render_template('error.html', code=404, message="Card not found"), 404
         
         tcgdex_cards = df.to_dict('records')
         return render_template('tcgdex_detail.html', 
@@ -135,7 +146,7 @@ def tcgdex_detail(card_name):
                                total_cards=total_cards)
     except Exception as e:
         logger.error(f"Error fetching TCGDex details: {str(e)}", exc_info=True)
-        return f"Error: {str(e)}", 500
+        return render_template('error.html', code=500, message=f"Error: {str(e)}"), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='localhost', port=5000)

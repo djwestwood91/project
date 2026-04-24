@@ -5,6 +5,9 @@
     <style>
         body { font-family: Arial; margin: 20px; }
         .container { max-width: 800px; margin: 0 auto; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; margin-right: 5px; }
+        .header h1 { margin: 0; color: #0f9657; font-size: 2.5em; text-shadow: 4px 4px 6px rgba(0,0,0,0.1); }
+        .header img { height: 150px; }
         .detail { margin: 10px 0; }
         .label { font-weight: bold; }
         a { color: #4CAF50; }
@@ -12,7 +15,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>{{ card.card }}</h1>
+        <div class="header">
+            <h1>{{ card.card }}</h1>
+            <img src="/files/images/bruce_logo.png" alt="Bruce Logo">
+        </div>
         <div class="detail">
             <span class="label">Set:</span> {{ card.card_set }}
         </div>

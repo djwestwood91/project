@@ -4,6 +4,9 @@
     <title>TCGDex API Lookup</title>
     <style>
         body { font-family: Arial; margin: 20px; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; margin-right: 5px; }
+        .header h1 { margin: 0; color: #0f9657; font-size: 2.5em; text-shadow: 4px 4px 6px rgba(0,0,0,0.1); }
+        .header img { height: 150px; }
         table { border-collapse: collapse; width: 100%; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #4CAF50; color: white; cursor: pointer; }
@@ -21,9 +24,37 @@
     </style>
 </head>
 <body>
-    <h1>{{ tcgdex_cards[0].card_name }}</h1>
+    <div class="header">
+        <h1>{{ tcgdex_cards[0].card_name }}</h1>
+        <img src="/files/images/bruce_logo.png" alt="Bruce Logo">
+    </div>
     <div class="page-info">
         Page {{ page }} of {{ total_pages }} | Total Cards: {{ total_cards }}
+    </div>
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="/tcgdex_detail/{{ tcgdex_cards[0].card_name }}?page=1">« First</a>
+            <a href="/tcgdex_detail/{{ tcgdex_cards[0].card_name }}?page={{ page - 1 }}">‹ Previous</a>
+        {% else %}
+            <span class="disabled">« First</span>
+            <span class="disabled">‹ Previous</span>
+        {% endif %}
+        
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+                <span class="current">{{ p }}</span>
+            {% elif p >= page - 2 and p <= page + 2 %}
+                <a href="/tcgdex_detail/{{ tcgdex_cards[0].card_name }}?page={{ p }}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page < total_pages %}
+            <a href="/tcgdex_detail/{{ tcgdex_cards[0].card_name }}?page={{ page + 1 }}">Next ›</a>
+            <a href="/tcgdex_detail/{{ tcgdex_cards[0].card_name }}?page={{ total_pages }}">Last »</a>
+        {% else %}
+            <span class="disabled">Next ›</span>
+            <span class="disabled">Last »</span>
+        {% endif %}
     </div>
     <a style="float:right; padding: 10px;" href="/">← Back to Cards</a>
     <table id="tcgdexTable">
@@ -45,7 +76,7 @@
             <td>
                 {% if card.tcgdex_image %}
                     <a href="{{ card.tcgdex_image }}" target="_blank">
-                        <img src="{{ card.tcgdex_image }}" alt="{{ card.tcgdex_name }}" style="max-width: 100px; max-height: 150px;">
+                        <img src="{{ card.tcgdex_image }}" alt="{{ card.tcgdex_name }}" style="max-width: 100px; max-height: 150px; display: block; margin: 0 auto;">
                     </a>
                 {% else %}
                     N/A
