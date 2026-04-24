@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error - Pokemon Cards</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: #095833; font-size: 2.5em; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+        .header img { height: 90px; }
+        .error-container { max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #d9534f; border-radius: 5px; background-color: #f8d7da; }
+        .error-code { font-size: 3em; font-weight: bold; color: #721c24; }
+        .error-message { font-size: 1.5em; color: #721c24; margin: 20px 0; }
+        .error-details { background-color: #fff; padding: 15px; border-radius: 3px; margin: 20px 0; border-left: 4px solid #d9534f; }
+        .error-details p { margin: 10px 0; color: #333; }
+        .nav-links { text-align: center; margin: 20px 0; }
+        .nav-links a { display: inline-block; padding: 10px 20px; margin: 5px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px; }
+        .nav-links a:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚠️ Pokemon Cards Collection ⚠️</h1>
+        <img src="/files/images/bruce_logo.png" alt="Bruce Logo">
+    </div>
+    
+    <div class="error-container">
+        <div class="error-code">Error {{ code }}</div>
+        <div class="error-message">{{ message }}</div>
+        
+        <div class="error-details">
+            {% if code == 404 %}
+                <p><strong>Page Not Found</strong></p>
+                <p>The page you're looking for doesn't exist. It may have been moved or deleted.</p>
+            {% elif code == 500 %}
+                <p><strong>Internal Server Error</strong></p>
+                <p>Something went wrong on the server. Our team has been notified. Please try again later.</p>
+            {% else %}
+                <p><strong>{{ message }}</strong></p>
+                <p>An error occurred while processing your request.</p>
+            {% endif %}
+        </div>
+        
+        <div class="nav-links">
+            <a href="/">Back to Home</a>
+            {% if code != 404 %}
+                <a href="javascript:history.back()">← Go Back</a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
