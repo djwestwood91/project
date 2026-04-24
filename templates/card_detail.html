@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Card Details</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .detail { margin: 10px 0; }
+        .label { font-weight: bold; }
+        a { color: #4CAF50; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ card.card }}</h1>
+        <div class="detail">
+            <span class="label">Set:</span> {{ card.card_set }}
+        </div>
+        <div class="detail">
+            <span class="label">Language:</span> {{ card.language }}
+        </div>
+        <div class="detail">
+            <span class="label">Rarity:</span> {{ card.rarity }}
+        </div>
+        <div class="detail">
+            <span class="label">Card ID:</span> {{ card.card_id }}
+        </div>
+        <div class="detail">
+            <span class="label">Holo Flag:</span> {{ 'Yes' if card.card_holo_flag else 'No' }}
+        </div>
+        <div class="detail">
+            <span class="label">First Edition Flag:</span> {{ 'Yes' if card.card_first_edition_flag else 'No' }}
+        </div>
+        <div class="detail">
+            <span class="label">Purchase Price:</span> {{ card.raw_price_excl_fees if card.raw_price_excl_fees is not none else 'N/A' }}
+        </div>
+        <div class="detail">
+            <span class="label">Postage Fees:</span> {{ card.postage_fees if card.postage_fees is not none else 'N/A' }}
+        </div>
+        <div class="detail">
+            <span class="label">Total Price:</span> {{ card.total_price if card.total_price is not none else 'N/A' }}
+        </div>
+        <div class="detail">
+            <span class="label">Currency:</span> {{ card.currency if card.currency is not none else 'N/A' }}
+        </div>
+        <div class="detail">
+            <span class="label">Grade:</span> {{ card.grade if card.grade is not none else 'N/A' }}
+        </div>
+        <div class="detail">
+            <span class="label">Company:</span> {{ card.company if card.company is not none else 'N/A' }}
+        </div>
+        <div class="detail">
+            <span class="label">Purchase Date:</span> {{ card.date_purchased if card.date_purchased is not none else 'N/A' }}
+        </div>
+        <hr>
+        <a href="/">← Back to Cards</a>
+    </div>
+</body>
+</html>

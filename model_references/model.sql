@@ -189,8 +189,8 @@ create schema if not exists pokemon_api authorization postgres;
 drop table if exists pokemon_api.tcgdex_card_reference;
 create table if not exists pokemon_api.tcgdex_card_reference (
     tcgdex_card_ref_id bigint generated always as identity primary key,
-    card_id bigint not null references pokemon_facts.card(card_id) on delete cascade,
-    language_id int not null references pokemon_dimensions.language(language_id),
+    card_name text not null,
+    "language" text not null,
     tcgdex_id text not null unique,
     tcgdex_localid text not null,
     tcgdex_name text not null,
@@ -200,5 +200,4 @@ create table if not exists pokemon_api.tcgdex_card_reference (
 );
 
 create index if not exists idx_tcgdex_id on pokemon_api.tcgdex_card_reference(tcgdex_id);
-create index if not exists idx_tcgdex_card_id on pokemon_api.tcgdex_card_reference(card_id);
 create index if not exists idx_tcgdex_localid on pokemon_api.tcgdex_card_reference(tcgdex_localid);

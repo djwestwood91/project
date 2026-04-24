@@ -13,16 +13,17 @@ def write_tcgdex_card_to_db(card_data, row, tcgdex_id):
     """
     try:
         # Insert card data into a TCGdex reference table
+        # upsert logic, updates time when the record was re-fetched from the API, but does not overwrite existing data to preserve historical information in case of API data changes
         insert_query = text(f"""
         INSERT INTO {DB_API_SCHEMA}.{DB_API_TGCDEX_CARD_TABLE}  
-        (card_id, language_id, tcgdex_id, tcgdex_localid, tcgdex_name, tcgdex_image, created_at, updated_at)
-        VALUES (:card_id, :language_id, :tcgdex_id, :tcgdex_localid, :tcgdex_name, :tcgdex_image, now(), now())
+        (card_name, language, tcgdex_id, tcgdex_localid, tcgdex_name, tcgdex_image, created_at, updated_at)
+        VALUES (:card_name, :language, :tcgdex_id, :tcgdex_localid, :tcgdex_name, :tcgdex_image, now(), now())
         ON CONFLICT (tcgdex_id) DO UPDATE SET updated_at = now()
         """)
 
         params = {
-            'card_id': row['card_id'],
-            'language_id': row['language_id'],
+            'card_name': row['card_name'],
+            'language': row['language'],
             'tcgdex_id': tcgdex_id,
             'tcgdex_localid': card_data.localId if hasattr(card_data, 'localId') and card_data.localId is not None else None,
             'tcgdex_name': card_data.name if hasattr(card_data, 'name') and card_data.name is not None else None,
@@ -32,7 +33,7 @@ def write_tcgdex_card_to_db(card_data, row, tcgdex_id):
         with ENGINE.connect() as conn:
             conn.execute(insert_query, params)
             conn.commit()
-            logger.info(f"Wrote card '{row['card']}' (ID: {tcgdex_id}) to database")
+            logger.info(f"Wrote card '{row['card_name']}' (ID: {tcgdex_id}) to database")
     
     except Exception as e:
         logger.error(f"Error writing card to database: {e}")
@@ -42,7 +43,7 @@ def check_source_card_price():
         query = f"""
                 SELECT distinct
                             c.card_id,
-                            c.card, 
+                            c.card as card_name, 
                             cs."name" as card_set,
                             l.language_id,
                             l."name" as language,
@@ -97,14 +98,14 @@ def run_card_api_checks():
             tcgdex.setLanguage(row['language'])
             logger.info(f"Row {idx}: Using TCGdex instance for language {row['language']}")
 
-            card_data_list = tcgdex.card.listSync(Query().equal("name", row['card']))
+            card_data_list = tcgdex.card.listSync(Query().equal("name", row['card_name']))
 
-            logger.info(f"Row {idx}: Found {len(card_data_list)} result(s) for '{row['card']}'")
+            logger.info(f"Row {idx}: Found {len(card_data_list)} result(s) for '{row['card_name']}'")
             
             # Write each card result to database
             for card_data in card_data_list:
                 write_tcgdex_card_to_db(card_data, row, card_data.id)
-                logger.info(f"Row {idx}: Wrote card data for '{row['card']}' to database")
+                logger.info(f"Row {idx}: Wrote card data for '{row['card_name']}' to database")
 
             # Add delay to avoid hitting API rate limits
             time.sleep(5)  # Adjust the sleep time as needed based on TCGdex API rate limits

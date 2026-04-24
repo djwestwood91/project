@@ -97,6 +97,7 @@ PIPELINE_DOWNLOAD_S3 = os.getenv("PIPELINE_DOWNLOAD_S3", "True").lower() == "tru
 # Default image quality and file type - appended to filename when downloading from TCGdex
 DEFAULT_IMAGE_QUALITY = os.getenv("DEFAULT_IMAGE_QUALITY", "high")
 DEFAULT_IMAGE_FILE_TYPE = os.getenv("DEFAULT_IMAGE_FILE_TYPE", "jpg")
+PAGE_SIZE = int(os.getenv("PAGE_SIZE", "25"))
 
 # AWS Configuration
 AWS_REGION = os.getenv("AWS_REGION")

@@ -207,6 +207,96 @@ PIPELINE_UPLOAD_S3=False
 PIPELINE_DOWNLOAD_S3=False
 ```
 
+## Web Application (Flask)
+
+The project includes a Flask-based web application (`app.py`) for interactive visualization and exploration of the Pokemon card collection stored in the PostgreSQL database.
+
+### Features
+
+**Card Collection View**
+- Display all cards in the collection with pagination (25 cards per page)
+- Shows: Card Name, Set, Language, Rarity
+- Browse through pages using pagination controls (First, Previous, Next, Last)
+- Total card count and current page information displayed
+
+**Interactive Column Sorting**
+- Click on any column header (Card Name, Set, Language, Rarity) to sort ascending/descending
+- Toggling sort order by clicking the header again
+- Supports both text (alphabetical) and numeric sorting
+- Note: Client-side sorting only affects current page display; navigating pages resets sort
+
+**Card Detail View**
+- Click "View Details" from the card list to see comprehensive card information
+- Displays:
+  - Basic card data: Name, Set, Language, Rarity, Card ID
+  - Flags: Holographic, First Edition, Promo
+  - Purchase history: Purchase price (excluding fees), postage fees, total price, currency, purchase date
+  - Grading information: Grade, grading company
+- Includes link back to main card collection
+
+**TCGdex API Reference View**
+- Click "View TCGDex Details" from the card list to access external reference data
+- Displays all TCGdex API reference records for a specific card with:
+  - Card Name (from main database)
+  - Language
+  - TCGDex ID and Local ID
+  - TCGDex Name and card images (clickable for larger view)
+- Multiple records shown if available in different languages or sets
+- Interactive sorting on TCGdex columns for easy data exploration
+
+### Running the Web Application
+
+1. Ensure PostgreSQL database is populated with card data (run `main.py` pipeline first)
+2. Start the Flask development server:
+```bash
+python app.py
+```
+3. Open browser and navigate to: `http://localhost:5000`
+
+### Application Architecture
+
+**Flask Routes**
+
+- `GET /` - Main index page with paginated card list
+  - Query parameters: `?page=N` for pagination
+  - Returns: `index.html` template with cards list, pagination controls, sorting functionality
+
+- `GET /card/<card_id>` - Card detail page
+  - Path parameter: `card_id` (integer)
+  - Returns: `card_detail.html` template with comprehensive card information
+  - Joins multiple fact and dimension tables to assemble complete card profile
+
+- `GET /tcgdex_detail/<card_name>` - TCGdex API reference page
+  - Path parameter: `card_name` (URL-encoded string)
+  - Returns: `tcgdex_detail.html` template with API reference records
+  - Queries `pokemon_api.tcgdex_card_reference` table
+
+**Technology Stack**
+- **Framework**: Flask (Python web framework)
+- **Database Interface**: SQLAlchemy with pandas for query execution
+- **Templating**: Jinja2 for dynamic HTML generation
+- **Frontend**: Vanilla JavaScript for interactive column sorting, HTML5/CSS3 for styling
+- **Database**: PostgreSQL with parameterized queries for security
+
+### Templates
+
+**index.html**
+- Displays paginated card collection (25 cards per page by default)
+- Responsive table with sortable column headers
+- Pagination controls with page number links
+- Links to card detail and TCGdex detail pages
+
+**card_detail.html**
+- Single card detail view with all associated information
+- Organized display of purchase, grading, and seller data
+- Back link to main collection
+
+**tcgdex_detail.html**
+- TCGdex API reference data display
+- Card image gallery with links to full images
+- Multi-language support for cards available in multiple languages
+- Interactive column sorting
+
 ## Database Schema
 
 The pipeline uses multiple schemas with **full 3NF normalization**:
