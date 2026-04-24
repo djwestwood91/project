@@ -22,6 +22,7 @@ This project automates the ingestion, transformation, and storage of Pokemon car
 ```
 project/
 ├── main.py                          # Main pipeline orchestrator
+├── app.py                           # Flask web application for card collection visualization
 ├── references.py                    # Database and file path configurations
 ├── card.py                          # Card data processing logic
 ├── card_instance.py                 # Card instance data processing logic
@@ -30,9 +31,14 @@ project/
 ├── purchase.py                      # Purchase transaction processing logic
 ├── card_api_refs.py                 # TCGdex API integration and external card reference data
 ├── excel_data_output.py             # Excel export to Tableau with multiple sheets
+├── templates/                       # Flask HTML templates for web application
+│   ├── index.html                   # Main card collection list with pagination and sorting
+│   ├── card_detail.html             # Single card detail view with all associated data
+│   └── tcgdex_detail.html           # TCGdex API reference data view for cards
 ├── utils/
 │   ├── aws_s3_utils.py              # AWS S3 client and operations
-│   └── db_utils.py                  # Database utilities (model creation, table clearing, identifier validation)
+│   ├── db_utils.py                  # Database utilities (model creation, table clearing, identifier validation)
+│   └── validators.py                # Input validation utilities
 ├── landing/
 │   ├── pokemon_cards_landing.py     # Landing layer data processing
 │   └── landing_validation.py        # Landing table data quality validation
@@ -42,9 +48,10 @@ project/
 │   └── model.sql                    # Database schema definitions
 ├── airflow/
 │   └── airflow_dag.py               # Airflow DAG orchestration for pipeline scheduling
-└── files/                           # Local data files directory
-    ├── processed_data/              # Output directory for processed files
-    └── source_data/                 # Input directory for source files
+├── files/                           # Local data files directory
+│   ├── processed_data/              # Output directory for processed files
+│   └── source_data/                 # Input directory for source files
+└── README.md                        # Project documentation
 ```
 
 ## Prerequisites
