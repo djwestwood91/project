@@ -45,6 +45,9 @@ def pokemon_card_processing_pipeline():
         """Run the Pokemon card processing pipeline"""
         from main import run_poke_pipeline
         run_poke_pipeline()
+
+        from card_api_refs import run_card_api_checks
+        run_card_api_checks()
     
     run_pipeline()
 

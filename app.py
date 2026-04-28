@@ -1,6 +1,8 @@
 from references import *
 from flask import Flask, render_template, request
 import os
+import plotly.express as px
+from sqlalchemy import text
 
 app = Flask(__name__, static_folder='files', static_url_path='/files')
 
@@ -147,6 +149,79 @@ def tcgdex_detail(card_name):
     except Exception as e:
         logger.error(f"Error fetching TCGDex details: {str(e)}", exc_info=True)
         return render_template('error.html', code=500, message=f"Error: {str(e)}"), 500
+
+# Route to display collection statistics with charts
+@app.route('/stats')
+def stats():
+    try:
+        # Query 1: Cards by Rarity
+        rarity_query = text(f"""
+        SELECT r.rarity, COUNT(*) as count
+        FROM {DB_FACTS_SCHEMA}.{DB_CARD_TABLE} c
+        JOIN {DB_DIMENSIONS_SCHEMA}.{DB_RARITY_LOOKUP_TABLE} r ON r.rarity_id = c.card_rarity_id
+        GROUP BY r.rarity
+        ORDER BY count DESC
+        """)
+        rarity_df = pd.read_sql(rarity_query, con=ENGINE)
+        fig_rarity = px.bar(rarity_df, x='rarity', y='count', 
+                           title='Cards by Rarity', 
+                           labels={'rarity': 'Rarity', 'count': 'Count'},
+                           color='count',
+                           color_continuous_scale='Viridis')
+        rarity_html = fig_rarity.to_html(include_plotlyjs='cdn')
+        
+        # Query 2: Cards by Set
+        set_query = text(f"""
+        SELECT cs."name" as set_name, COUNT(*) as count
+        FROM {DB_FACTS_SCHEMA}.{DB_CARD_TABLE} c
+        JOIN {DB_DIMENSIONS_SCHEMA}.{DB_SET_LOOKUP_TABLE} cs ON cs.card_set_id = c.card_set_id
+        GROUP BY cs."name"
+        ORDER BY count DESC;
+        """)
+        set_df = pd.read_sql(set_query, con=ENGINE)
+        fig_set = px.bar(set_df, x='set_name', y='count',
+                        title='Top Card Sets',
+                        labels={'set_name': 'Set', 'count': 'Count'},
+                        color='count',
+                        color_continuous_scale='Blues')
+        set_html = fig_set.to_html(include_plotlyjs='cdn')
+        
+        # Query 3: Cards by Language
+        language_query = text(f"""
+        SELECT l."name" as language, COUNT(*) as count
+        FROM {DB_FACTS_SCHEMA}.{DB_CARD_TABLE} c
+        JOIN {DB_DIMENSIONS_SCHEMA}.{DB_LANGUAGE_LOOKUP_TABLE} l ON l.language_id = c.card_language_id
+        GROUP BY l."name"
+        ORDER BY count DESC;
+        """)
+        language_df = pd.read_sql(language_query, con=ENGINE)
+        fig_language = px.pie(language_df, values='count', names='language',
+                             title='Cards by Language')
+        language_html = fig_language.to_html(include_plotlyjs='cdn')
+        
+        # Query 4: Total cards and summary stats
+        summary_query = text(f"""
+        SELECT 
+            COUNT(DISTINCT c.card_id) as total_cards,
+            COUNT(DISTINCT ci.card_instance_id) as total_instances,
+            COUNT(DISTINCT cs.card_set_id) as total_sets,
+            COUNT(DISTINCT l.language_id) as total_languages
+        FROM {DB_FACTS_SCHEMA}.{DB_CARD_TABLE} c
+        LEFT JOIN {DB_FACTS_SCHEMA}.{DB_CARD_INSTANCE_TABLE} ci ON c.card_id = ci.card_id
+        JOIN {DB_DIMENSIONS_SCHEMA}.{DB_SET_LOOKUP_TABLE} cs ON cs.card_set_id = c.card_set_id
+        JOIN {DB_DIMENSIONS_SCHEMA}.{DB_LANGUAGE_LOOKUP_TABLE} l ON l.language_id = c.card_language_id;
+        """)
+        summary_df = pd.read_sql(summary_query, con=ENGINE)
+        summary = summary_df.to_dict('records')[0]
+        
+        return render_template('stats.html',
+                              rarity_html=rarity_html,
+                              set_html=set_html,
+                              language_html=language_html,
+                              summary=summary)
+    except Exception as e:
+        logger.error(f"Error generating stats: {str(e)}", exc_info=True)
+        return render_template('error.html', code=500, message=f"Error generating statistics: {str(e)}"), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='localhost', port=5000)

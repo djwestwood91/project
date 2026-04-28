@@ -1,5 +1,5 @@
 from references import *
-from tcgdexsdk import TCGdex, Query
+from tcgdexsdk import Language, TCGdex, Query
 import time
 
 def write_tcgdex_card_to_db(card_data, row, tcgdex_id):
@@ -82,7 +82,7 @@ def run_card_api_checks():
         language_map = {
             'English': "en",
             'Japanese': "ja",
-            'German': "de"
+            'German': "de",
             # add more mappings as needed
         }
         current_prices_df['language'] = current_prices_df['language'].map(language_map)
@@ -91,25 +91,47 @@ def run_card_api_checks():
 
         logger.info("Testing basic API query...")
         all_cards = tcgdex.card.listSync()  # Get ALL cards
-        logger.info(f"Total cards available: {len(all_cards)}")
+        logger.info(f"Total cards available (all languages): {len(all_cards)}")
 
         # Iterate through dataframe and use set appropriate language per row
         for idx, row in current_prices_df.iterrows():
             tcgdex.setLanguage(row['language'])
             logger.info(f"Row {idx}: Using TCGdex instance for language {row['language']}")
 
-            card_data_list = tcgdex.card.listSync(Query().equal("name", row['card_name']))
+            card_data_list = tcgdex.card.listSync(Query().contains("name", row['card_name'].lower()))
+            if not card_data_list:
+                card_data_list = tcgdex.card.listSync(Query().equal("name", row['card_name'])) 
 
-            logger.info(f"Row {idx}: Found {len(card_data_list)} result(s) for '{row['card_name']}'")
+            logger.info(f"Row {idx}: Found {len(card_data_list)} result(s) for {row['language']} '{row['card_name']}'")
             
             # Write each card result to database
             for card_data in card_data_list:
                 write_tcgdex_card_to_db(card_data, row, card_data.id)
-                logger.info(f"Row {idx}: Wrote card data for '{row['card_name']}' to database")
+                logger.info(f"Row {idx}: Wrote card data for {row['language']} '{row['card_name']}' to database")
 
             # Add delay to avoid hitting API rate limits
             time.sleep(5)  # Adjust the sleep time as needed based on TCGdex API rate limits
 
+        # debugging for specific language handling - can be commented out after testing is complete, 
+        # as the above code already writes API data to the database for further analysis
+        # language specific testing to isolate any potential issues with language handling in the API
+        """
+        sdk = TCGdex("ja")  # Japanese
+        all_cards = sdk.card.listSync()  # Get ALL cards
+        print(f"Total cards in TCGdex: {len(all_cards)}")
+        time.sleep(5)
+        current_prices_df = current_prices_df[current_prices_df['language'] == 'ja']
+        print(len(current_prices_df))
+        counter = 0
+        for idx, row in current_prices_df.iterrows():
+            counter += 1
+            logger.info(f"Debug: Processing row {counter}/{len(current_prices_df)}")
+            card_data_list = sdk.card.listSync(Query().contains("name", row['card_name'].lower()))
+            print(len(card_data_list))
+            for card_data in card_data_list:
+                time.sleep(10)  # Add delay to avoid hitting API rate limits during debugging
+                logger.info(f"Debug: TCGdex reference data for {row['language']} '{row['card_name']}': ID={card_data.id}, LocalID={card_data.localId}, Name={card_data.name}, Image={card_data.image}")
+        """
     except Exception as e:
         logger.error(f"Error running card price checks: {str(e)}", exc_info=True)
         raise

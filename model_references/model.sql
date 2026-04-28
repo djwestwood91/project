@@ -27,7 +27,6 @@ create table if not exists pokemon_landing.landing_pokemon_card (
   card_additional_details_3 text,
   card_purchase_price numeric,
   postage_fees numeric,
-  total_price numeric,
   card_currency text,
   card_date_purchased date,
   card_source text,

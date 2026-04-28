@@ -55,7 +55,6 @@ def load_pokemon_cards_landing():
                                     'Additional Details 3': 'card_additional_details_3',
                                     'Purchase Price': 'card_purchase_price',
                                     'Postage Fees': 'postage_fees',
-                                    'Total': 'total_price',
                                     'Card Currency': 'card_currency',
                                     'Date Purchased': 'card_date_purchased',
                                     'Source': 'card_source',
