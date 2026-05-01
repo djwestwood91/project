@@ -74,6 +74,28 @@ def check_source_card_price():
         logger.error(f"Error checking card prices: {str(e)}", exc_info=True)
         raise
 
+# todo add more checks and additional insert functions for new DB API tables
+def run_full_api_checks():
+    try:
+        tcgdex = TCGdex() # Initialize with default language (English)
+
+        rarities = tcgdex.rarity.listSync()
+        logger.info(f"Total rarities available: {len(rarities)}")
+        print(rarities[0])  # Print the first rarity for verification to obtain structure of rarity data
+        for rarity in rarities:
+            print(rarity)
+            pass
+
+        sets = tcgdex.set.listSync()
+        logger.info(f"Total sets available: {len(sets)}")
+        print(sets[0])  # Print the first set for verification to obtain structure of set data
+        for set in sets:
+            print(set)
+            pass
+    except Exception as e:
+        logger.error(f"Error running card rarity checks: {str(e)}", exc_info=True)
+        raise
+
 def run_card_api_checks():
     try:
         current_prices_df = check_source_card_price()
@@ -137,4 +159,6 @@ def run_card_api_checks():
         raise
 
 if __name__ == "__main__":
-    run_card_api_checks();
+    run_full_api_checks();
+    run_card_api_checks(); 
+
